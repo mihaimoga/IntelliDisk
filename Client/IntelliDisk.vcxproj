@@ -192,6 +192,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="HyperlinkStatic.h" />
     <ClInclude Include="IntelliDisk.h" />
+    <ClInclude Include="IntelliDIskExt.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="NotifyDirCheck.h" />
     <ClInclude Include="NTray.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="FileInformation.cpp" />
     <ClCompile Include="HyperlinkStatic.cpp" />
     <ClCompile Include="IntelliDisk.cpp" />
+    <ClCompile Include="IntelliDiskExt.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="NotifyDirCheck.cpp" />
     <ClCompile Include="NTray.cpp" />

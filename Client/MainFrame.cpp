@@ -19,6 +19,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "IntelliDisk.h"
 
 #include "MainFrame.h"
+#include "IntelliDiskExt.h"
 
 #define WM_TRAYNOTIFY WM_USER + 0x1234
 
@@ -101,12 +102,16 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
+	TRACE(_T("GetMachineID = %s\n"), utf8_to_wstring(GetMachineID()).c_str());
+	TRACE(_T("GetSpecialFolder = %s\n"), GetSpecialFolder().c_str());
+	// InstallStartupApps(true);
+	// InstallStartupApps(false);
 	return 0;
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if( !CFrameWndEx::PreCreateWindow(cs) )
+	if (!CFrameWndEx::PreCreateWindow(cs))
 		return FALSE;
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
