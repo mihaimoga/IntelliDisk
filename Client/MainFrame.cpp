@@ -19,6 +19,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "IntelliDisk.h"
 
 #include "MainFrame.h"
+#include "SettingsDlg.h"
 #include "IntelliDiskExt.h"
 
 #define WM_TRAYNOTIFY WM_USER + 0x1234
@@ -41,6 +42,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_MESSAGE(WM_TRAYNOTIFY, OnTrayNotification)
 	ON_COMMAND(ID_SHOW_APPLICATION, &CMainFrame::OnShowApplication)
 	ON_COMMAND(ID_HIDE_APPLICATION, &CMainFrame::OnHideApplication)
+	ON_COMMAND(ID_SETTINGS, &CMainFrame::OnSettings)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -102,10 +104,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
-	TRACE(_T("GetMachineID = %s\n"), utf8_to_wstring(GetMachineID()).c_str());
-	TRACE(_T("GetSpecialFolder = %s\n"), GetSpecialFolder().c_str());
-	// InstallStartupApps(true);
-	// InstallStartupApps(false);
 	return 0;
 }
 
@@ -193,4 +191,10 @@ void CMainFrame::OnHideApplication()
 	// The one and only window has been initialized, so hide and update it
 	ShowWindow(SW_HIDE);
 	UpdateWindow();
+}
+
+void CMainFrame::OnSettings()
+{
+	CSettingsDlg dlgSettings(this);
+	dlgSettings.DoModal();
 }

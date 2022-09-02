@@ -97,7 +97,7 @@ const std::wstring GetSpecialFolder()
 	{
 		std::wstring result(lpszSpecialFolderPath);
 		CoTaskMemFree(lpszSpecialFolderPath);
-		result += _T("\\IntelliDisk");
+		result += _T("\\IntelliDisk\\");
 		return result;
 	}
 	return _T("");

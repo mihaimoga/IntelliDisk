@@ -64,6 +64,7 @@ protected:
 	afx_msg LRESULT OnTrayNotification(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnShowApplication();
 	afx_msg void OnHideApplication();
+	afx_msg void OnSettings();
 
 	DECLARE_MESSAGE_MAP()
 };

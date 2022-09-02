@@ -115,8 +115,7 @@ BOOL CIntelliDiskApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
-
+	SetRegistryKey(_T("Mihai MOGA"));
 
 	InitContextMenuManager();
 
@@ -239,7 +238,7 @@ BOOL CAboutDlg::OnInitDialog()
 	// logfont.lfQuality = ANTIALIASED_QUALITY;
 	logfont.lfOutPrecision = OUT_TT_PRECIS;
 	logfont.lfWeight = FW_NORMAL;
-	logfont.lfHeight = -MulDiv(6, GetDeviceCaps(::GetDC(NULL), LOGPIXELSY), 72);;
+	logfont.lfHeight = -MulDiv(6, GetDeviceCaps(::GetDC(NULL), LOGPIXELSY), 72);
 	_tcscpy_s(logfont.lfFaceName, LF_FACESIZE, _T("Tahoma"));
 	VERIFY(m_fontCourier.CreateFontIndirect(&logfont));
 
@@ -287,6 +286,3 @@ void CIntelliDiskApp::SaveCustomState()
 }
 
 // CIntelliDiskApp message handlers
-
-
-

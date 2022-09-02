@@ -188,6 +188,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChildView.h" />
+    <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="FileInformation.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HyperlinkStatic.h" />
@@ -204,6 +205,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChildView.cpp" />
+    <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="FileInformation.cpp" />
     <ClCompile Include="HyperlinkStatic.cpp" />
     <ClCompile Include="IntelliDisk.cpp" />

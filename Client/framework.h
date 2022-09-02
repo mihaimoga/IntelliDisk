@@ -96,3 +96,5 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+
+// https://www.iconfinder.com/iconsets/ios-11-glyphs

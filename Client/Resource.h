@@ -29,21 +29,30 @@
 #define PNG_WRITELARGE                  313
 #define PNG_WRITESMALL                  314
 #define IDR_TRAYPOPUP                   315
+#define IDD_SETTINGS_DIALOG             316
 #define IDC_VERSION                     1000
 #define IDC_WARNING                     1001
 #define IDC_WEBSITE                     1002
 #define IDC_EMAIL                       1003
+#define IDC_MACHINE_ID                  1004
+#define IDC_SPECIAL_FOLDER              1005
+#define IDC_SERVER_IP                   1006
+#define IDC_SERVER_PORT                 1007
+#define IDC_CHECK1                      1008
+#define IDC_STARTUP_APPS                1008
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_SHOW_APPLICATION             32771
 #define ID_HIDE_APPLICATION             32772
+#define ID_BUTTON2                      32773
+#define ID_SETTINGS                     32773
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        316
-#define _APS_NEXT_COMMAND_VALUE         32773
-#define _APS_NEXT_CONTROL_VALUE         1004
-#define _APS_NEXT_SYMED_VALUE           310
+#define _APS_NEXT_RESOURCE_VALUE        317
+#define _APS_NEXT_COMMAND_VALUE         32774
+#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_SYMED_VALUE           317
 #endif
 #endif
