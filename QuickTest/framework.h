@@ -49,3 +49,15 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
 #endif
+
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <atlsync.h>
+#include <vector>
+#include <map>
+#include <codecvt>
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <cctype>

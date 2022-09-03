@@ -158,7 +158,6 @@ int CIntelliDiskApp::ExitInstance()
 
 // CIntelliDiskApp message handlers
 
-
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialog

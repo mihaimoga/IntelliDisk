@@ -65,11 +65,6 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include <algorithm>
 #include <cctype>
 
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include <atlsync.h>
-
 #define _ATL_APARTMENT_THREADED
 
 #define _ATL_NO_AUTOMATIC_NAMESPACE

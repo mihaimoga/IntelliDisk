@@ -18,7 +18,9 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "framework.h"
 #include "QuickTest.h"
 #include "QuickTestDlg.h"
-#include "afxdialogex.h"
+
+#include "VersionInfo.h"
+#include "HyperlinkStatic.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,35 +28,103 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 // CAboutDlg dialog used for App About
 
-class CAboutDlg : public CDialogEx
+class CAboutDlg : public CDialog
 {
 public:
 	CAboutDlg();
 
-// Dialog Data
-#ifdef AFX_DESIGN_TIME
+	// Dialog Data
 	enum { IDD = IDD_ABOUTBOX };
-#endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
+public:
+	virtual BOOL OnInitDialog();
+	afx_msg void OnDestroy();
+
 protected:
+	CFont m_fontCourier;
+	CStatic m_ctrlVersion;
+	CEdit m_ctrlWarning;
+	CVersionInfo m_pVersionInfo;
+	CHyperlinkStatic m_ctrlWebsite;
+	CHyperlinkStatic m_ctrlEmail;
+
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
+CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 {
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialogEx::DoDataExchange(pDX);
+	CDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_VERSION, m_ctrlVersion);
+	DDX_Control(pDX, IDC_WARNING, m_ctrlWarning);
+	DDX_Control(pDX, IDC_WEBSITE, m_ctrlWebsite);
+	DDX_Control(pDX, IDC_EMAIL, m_ctrlEmail);
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
+
+BOOL CAboutDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	TCHAR lpszDrive[_MAX_DRIVE];
+	TCHAR lpszDirectory[_MAX_DIR];
+	TCHAR lpszFilename[_MAX_FNAME];
+	TCHAR lpszExtension[_MAX_EXT];
+	TCHAR lpszFullPath[_MAX_PATH];
+
+	VERIFY(0 == _tsplitpath_s(AfxGetApp()->m_pszHelpFilePath, lpszDrive, _MAX_DRIVE, lpszDirectory, _MAX_DIR, lpszFilename, _MAX_FNAME, lpszExtension, _MAX_EXT));
+	VERIFY(0 == _tmakepath_s(lpszFullPath, _MAX_PATH, lpszDrive, lpszDirectory, lpszFilename, _T(".exe")));
+
+	if (m_pVersionInfo.Load(lpszFullPath))
+	{
+		CString strName = m_pVersionInfo.GetProductName().c_str();
+		CString strVersion = m_pVersionInfo.GetProductVersionAsString().c_str();
+		strVersion.Replace(_T(" "), _T(""));
+		strVersion.Replace(_T(","), _T("."));
+		const int nFirst = strVersion.Find(_T('.'));
+		const int nSecond = strVersion.Find(_T('.'), nFirst + 1);
+		strVersion.Truncate(nSecond);
+		m_ctrlVersion.SetWindowText(strName + _T(" version ") + strVersion);
+	}
+
+	// set up window's terminal fixed font
+	LOGFONT logfont;
+	memset(&logfont, 0, sizeof(logfont));
+	logfont.lfCharSet = OEM_CHARSET;
+	logfont.lfPitchAndFamily = FIXED_PITCH;
+	// logfont.lfQuality = ANTIALIASED_QUALITY;
+	logfont.lfOutPrecision = OUT_TT_PRECIS;
+	logfont.lfWeight = FW_NORMAL;
+	logfont.lfHeight = -MulDiv(6, GetDeviceCaps(::GetDC(NULL), LOGPIXELSY), 72);
+	_tcscpy_s(logfont.lfFaceName, LF_FACESIZE, _T("Tahoma"));
+	VERIFY(m_fontCourier.CreateFontIndirect(&logfont));
+
+	m_ctrlWarning.SetFont(&m_fontCourier);
+	m_ctrlWarning.SetWindowText(_T("THE SOFTWARE IS PROVIDED \"AS-IS\" AND WITHOUT WARRANTY OF ANY KIND, EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL STEFAN-MIHAI MOGA BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."));
+
+	m_ctrlWebsite.SetHyperlink(_T("https://www.emvs.site/"));
+	m_ctrlEmail.SetHyperlink(_T("mailto:contact@emvs.site"));
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CAboutDlg::OnDestroy()
+{
+	CDialog::OnDestroy();
+
+	VERIFY(m_fontCourier.DeleteObject());
+}
 
 // CQuickTestDlg dialog
 
