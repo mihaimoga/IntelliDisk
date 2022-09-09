@@ -40,6 +40,7 @@
 #define IDC_SERVER_PORT                 1007
 #define IDC_CHECK1                      1008
 #define IDC_STARTUP_APPS                1008
+#define IDC_CONTRIBUTORS                1009
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_SHOW_APPLICATION             32771
 #define ID_HIDE_APPLICATION             32772
@@ -50,9 +51,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        317
+#define _APS_NEXT_RESOURCE_VALUE        318
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           317
 #endif
 #endif

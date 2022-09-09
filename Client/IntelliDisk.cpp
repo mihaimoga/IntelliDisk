@@ -183,6 +183,7 @@ protected:
 	CVersionInfo m_pVersionInfo;
 	CHyperlinkStatic m_ctrlWebsite;
 	CHyperlinkStatic m_ctrlEmail;
+	CHyperlinkStatic m_ctrlContributors;
 
 	DECLARE_MESSAGE_MAP()
 };
@@ -198,6 +199,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_WARNING, m_ctrlWarning);
 	DDX_Control(pDX, IDC_WEBSITE, m_ctrlWebsite);
 	DDX_Control(pDX, IDC_EMAIL, m_ctrlEmail);
+	DDX_Control(pDX, IDC_CONTRIBUTORS, m_ctrlContributors);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
@@ -246,6 +248,7 @@ BOOL CAboutDlg::OnInitDialog()
 
 	m_ctrlWebsite.SetHyperlink(_T("https://www.emvs.site/"));
 	m_ctrlEmail.SetHyperlink(_T("mailto:contact@emvs.site"));
+	m_ctrlContributors.SetHyperlink(_T("https://github.com/mihaimoga/IntelliDisk/graphs/contributors"));
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
