@@ -27,13 +27,15 @@ public:
 	CChildView();
 
 // Attributes
-public:
+protected:
+	CMFCListCtrl m_mfcListCtrl;
 
 // Operations
 public:
+	CMFCListCtrl& GetListCtrl() { return m_mfcListCtrl; }
 
 // Overrides
-	protected:
+protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 // Implementation
@@ -41,8 +43,12 @@ public:
 	virtual ~CChildView();
 
 	// Generated message map functions
-protected:
+public:
 	afx_msg void OnPaint();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+
 	DECLARE_MESSAGE_MAP()
 };
-

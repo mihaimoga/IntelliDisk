@@ -37,6 +37,9 @@ CChildView::~CChildView()
 
 BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_WM_PAINT()
+	ON_WM_CREATE()
+	ON_WM_DESTROY()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -65,3 +68,40 @@ void CChildView::OnPaint()
 	// Do not call CWnd::OnPaint() for painting messages
 }
 
+int CChildView::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CWnd::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	if (!m_mfcListCtrl.Create(WS_CHILD | WS_VISIBLE | LVS_REPORT |
+		LVS_SHOWSELALWAYS, CRect(0, 0, 0, 0), this, ID_MFCLISTCTRL))
+		return -1;
+
+	m_mfcListCtrl.SetExtendedStyle(m_mfcListCtrl.GetExtendedStyle()
+		| LVS_EX_DOUBLEBUFFER | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+	return 0;
+}
+
+void CChildView::OnDestroy()
+{
+	CWnd::OnDestroy();
+
+	VERIFY(m_mfcListCtrl.DestroyWindow());
+}
+
+void CChildView::OnSize(UINT nType, int cx, int cy)
+{
+	CWnd::OnSize(nType, cx, cy);
+
+	if (m_mfcListCtrl.GetSafeHwnd() != NULL)
+		m_mfcListCtrl.MoveWindow(0, 0, cx, cy);
+}
+
+BOOL CChildView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+	if (m_mfcListCtrl.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+		return TRUE;
+
+	return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
