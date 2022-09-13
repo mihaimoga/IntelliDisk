@@ -20,6 +20,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "afxdialogex.h"
 #include "IntelliDisk.h"
 #include "MainFrame.h"
+#include "IntelliDiskExt.h"
 
 #include "VersionInfo.h"
 #include "HyperlinkStatic.h"
@@ -127,6 +128,12 @@ BOOL CIntelliDiskApp::InitInstance()
 	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
 		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
+	if (!SetCurrentDirectory(GetSpecialFolder().c_str()))
+	{
+		VERIFY(CreateDirectory(GetSpecialFolder().c_str(), nullptr));
+		VERIFY(SetCurrentDirectory(GetSpecialFolder().c_str()));
+	}
+
 	// To create the main window, this code creates a new frame window
 	// object and then sets it as the application's main window object
 	CFrameWnd* pFrame = new CMainFrame;
@@ -138,6 +145,7 @@ BOOL CIntelliDiskApp::InitInstance()
 		WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, nullptr,
 		nullptr);
 
+	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	// The one and only window has been initialized, so show and update it
 	pFrame->ShowWindow(SW_HIDE);
 	pFrame->UpdateWindow();

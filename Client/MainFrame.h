@@ -65,6 +65,8 @@ protected:
 	afx_msg void OnShowApplication();
 	afx_msg void OnHideApplication();
 	afx_msg void OnSettings();
+	afx_msg void OnOpenFolder();
+	afx_msg void OnViewOnline();
 
 	DECLARE_MESSAGE_MAP()
 };
