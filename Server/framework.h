@@ -46,3 +46,15 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 #include <afxsock.h>            // MFC socket extensions
+
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <atlsync.h>
+#include <vector>
+#include <map>
+#include <codecvt>
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <cctype>

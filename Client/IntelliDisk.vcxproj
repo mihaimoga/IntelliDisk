@@ -201,6 +201,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SHA256.h" />
     <ClInclude Include="sinstance.h" />
+    <ClInclude Include="SocMFC.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
@@ -222,6 +223,7 @@
     </ClCompile>
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="sinstance.cpp" />
+    <ClCompile Include="SocMFC.cpp" />
     <ClCompile Include="VersionInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
