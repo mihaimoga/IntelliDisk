@@ -14,9 +14,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 // ChildView.h : interface of the CChildView class
 //
 
-
 #pragma once
-
 
 // CChildView window
 

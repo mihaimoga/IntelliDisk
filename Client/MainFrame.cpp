@@ -34,6 +34,7 @@ IMPLEMENT_DYNAMIC(CMainFrame, CFrameWndEx)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_WM_CREATE()
+	ON_WM_DESTROY()
 	ON_WM_SETFOCUS()
 	ON_COMMAND(ID_FILE_PRINT, &CMainFrame::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CMainFrame::OnFilePrint)
@@ -106,7 +107,38 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
+	SHFILEINFO pshFileInfo = { 0 };
+	HIMAGELIST hSystemImageList =
+		(HIMAGELIST)SHGetFileInfo(
+			_T(""),
+			0,
+			&pshFileInfo,
+			sizeof(pshFileInfo),
+			SHGFI_ICON | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+	if (hSystemImageList != NULL)
+	{
+		VERIFY(m_pImageList.Attach(hSystemImageList));
+		m_wndView.GetListCtrl().SetImageList(&m_pImageList, LVSIL_SMALL);
+	}
+
+	CRect rectClient;
+	m_wndView.GetListCtrl().GetClientRect(&rectClient);
+	m_wndView.GetListCtrl().InsertColumn(0, _T("Operation"), LVCFMT_LEFT, rectClient.Width());
+
+	m_pNotifyDirCheck.SetDirectory(GetSpecialFolder().c_str());
+	m_pNotifyDirCheck.SetData(this);
+	// set your callback to work with each new event
+	m_pNotifyDirCheck.SetActionCallback(DirCallback);
+	m_pNotifyDirCheck.Run();
+
 	return 0;
+}
+
+void CMainFrame::OnDestroy()
+{
+	m_pNotifyDirCheck.Stop();
+
+	CFrameWndEx::OnDestroy();
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
@@ -209,4 +241,22 @@ void CMainFrame::OnOpenFolder()
 void CMainFrame::OnViewOnline()
 {
 	// TODO: Add your command handler code here
+}
+
+void CMainFrame::ShowMessage(std::wstring strMessage, std::wstring strFilePath)
+{
+	const int nListItem = m_wndView.GetListCtrl().InsertItem(m_wndView.GetListCtrl().GetItemCount(), strMessage.c_str());
+	SHFILEINFO pshFileInfo = { 0 };
+	SHGetFileInfo(
+		strFilePath.c_str(),
+		FILE_ATTRIBUTE_NORMAL,
+		&pshFileInfo, sizeof(pshFileInfo),
+		SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
+	LVITEM lviItem = { 0 };
+	lviItem.mask = LVIF_IMAGE;
+	lviItem.iItem = nListItem;
+	lviItem.iSubItem = 0;
+	lviItem.iImage = pshFileInfo.iIcon;
+	VERIFY(m_wndView.GetListCtrl().SetItem(&lviItem));
+	m_wndView.GetListCtrl().EnsureVisible(nListItem, FALSE);
 }

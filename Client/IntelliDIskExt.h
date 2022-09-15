@@ -13,6 +13,9 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #pragma once
 
+#include "FileInformation.h"
+#include "NotifyDirCheck.h"
+
 std::wstring utf8_to_wstring(const std::string& str);
 std::string wstring_to_utf8(const std::wstring& str);
 
@@ -20,3 +23,5 @@ const std::string GetMachineID();
 const std::wstring GetSpecialFolder();
 
 bool InstallStartupApps(bool bInstallStartupApps);
+
+UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData);

@@ -17,6 +17,8 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #pragma once
 #include "ChildView.h"
 #include "NTray.h"
+#include "FileInformation.h"
+#include "NotifyDirCheck.h"
 
 class CMainFrame : public CFrameWndEx
 {
@@ -30,6 +32,8 @@ protected:
 public:
 	HICON m_hMainFrameIcon;
 	CTrayNotifyIcon m_pTrayIcon;
+	CNotifyDirCheck m_pNotifyDirCheck;
+	CImageList m_pImageList;
 
 // Operations
 public:
@@ -57,6 +61,7 @@ protected:  // control bar embedded members
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDestroy();
 	afx_msg void OnSetFocus(CWnd *pOldWnd);
 	afx_msg void OnFilePrint();
 	afx_msg void OnFilePrintPreview();
@@ -67,6 +72,8 @@ protected:
 	afx_msg void OnSettings();
 	afx_msg void OnOpenFolder();
 	afx_msg void OnViewOnline();
+public:
+	afx_msg void ShowMessage(std::wstring strMessage, std::wstring strFilePath);
 
 	DECLARE_MESSAGE_MAP()
 };

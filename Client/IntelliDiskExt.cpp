@@ -13,6 +13,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "pch.h"
 #include "IntelliDiskExt.h"
+#include "MainFrame.h"
 #include <KnownFolders.h>
 #include <shlobj.h>
 
@@ -134,4 +135,37 @@ bool InstallStartupApps(bool bInstallStartupApps)
 		RegCloseKey(regValue);
 	}
 	return result;
+}
+
+UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
+{
+	CString strBuffer;
+	CString strFilePath = fiObject.GetFilePath();
+
+	if (IS_CREATE_FILE(faAction))
+	{
+		// strBuffer.Format(_T("Created %s"), strFilePath);
+		strBuffer.Format(_T("Uploading %s..."), strFilePath);
+	}
+	else if (IS_DELETE_FILE(faAction))
+	{
+		// strBuffer.Format(_T("Deleted %s"), strFilePath);
+		strBuffer.Format(_T("Deleting %s..."), strFilePath);
+	}
+	else if (IS_CHANGE_FILE(faAction))
+	{
+		// strBuffer.Format(_T("Changed %s"), strFilePath);
+		strBuffer.Format(_T("Uploading %s..."), strFilePath);
+	}
+	else
+	{
+		return 1; // error, stop thread
+	}
+
+	CMainFrame* pMainFrame = (CMainFrame*)lpData;
+	pMainFrame->ShowMessage(strBuffer.GetBuffer(), strFilePath.GetBuffer());
+	strBuffer.ReleaseBuffer();
+	strFilePath.ReleaseBuffer();
+
+	return 0; // success
 }
