@@ -54,10 +54,31 @@ CMainFrame::CMainFrame() noexcept
 {
 	m_hMainFrameIcon = CTrayNotifyIcon::LoadIcon(IDR_MAINFRAME);
 	m_MainButton = NULL;
+	m_hOccupiedSemaphore = CreateSemaphore(NULL, 0, BSIZE, NULL);
+	m_hEmptySemaphore = CreateSemaphore(NULL, BSIZE, BSIZE, NULL);
+	m_hResourceMutex = CreateSemaphore(NULL, 1, 1, NULL);
+	m_nNextIn = m_nNextOut = 0;
 }
 
 CMainFrame::~CMainFrame()
 {
+	if (m_hResourceMutex != NULL)
+	{
+		VERIFY(CloseHandle(m_hResourceMutex));
+		m_hResourceMutex = NULL;
+	}
+
+	if (m_hEmptySemaphore != NULL)
+	{
+		VERIFY(CloseHandle(m_hEmptySemaphore));
+		m_hEmptySemaphore = NULL;
+	}
+
+	if (m_hOccupiedSemaphore != NULL)
+	{
+		VERIFY(CloseHandle(m_hOccupiedSemaphore));
+		m_hOccupiedSemaphore = NULL;
+	}
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -131,12 +152,36 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pNotifyDirCheck.SetActionCallback(DirCallback);
 	m_pNotifyDirCheck.Run();
 
+	m_hProducerThread = CreateThread(NULL, 0, ProducerThread, this, 0, &m_dwThreadID[0]);
+	ASSERT(m_hProducerThread != NULL);
+	m_hConsumerThread = CreateThread(NULL, 0, ConsumerThread, this, 0, &m_dwThreadID[1]);
+	ASSERT(m_hConsumerThread != NULL);
+
 	return 0;
 }
 
 void CMainFrame::OnDestroy()
 {
 	m_pNotifyDirCheck.Stop();
+
+	AddNewItem(ID_STOP_PROCESS, std::wstring(_T("")), this);
+
+	HANDLE hThreadArray[2] = { 0, 0 };
+	hThreadArray[0] = m_hProducerThread;
+	hThreadArray[1] = m_hConsumerThread;
+	WaitForMultipleObjects(2, hThreadArray, TRUE, INFINITE);
+
+	if (m_hProducerThread != NULL)
+	{
+		VERIFY(CloseHandle(m_hProducerThread));
+		m_hProducerThread = NULL;
+	}
+
+	if (m_hConsumerThread != NULL)
+	{
+		VERIFY(CloseHandle(m_hConsumerThread));
+		m_hConsumerThread = NULL;
+	}
 
 	CFrameWndEx::OnDestroy();
 }
@@ -243,7 +288,7 @@ void CMainFrame::OnViewOnline()
 	// TODO: Add your command handler code here
 }
 
-void CMainFrame::ShowMessage(std::wstring strMessage, std::wstring strFilePath)
+void CMainFrame::ShowMessage(const std::wstring& strMessage, const std::wstring& strFilePath)
 {
 	const int nListItem = m_wndView.GetListCtrl().InsertItem(m_wndView.GetListCtrl().GetItemCount(), strMessage.c_str());
 	SHFILEINFO pshFileInfo = { 0 };

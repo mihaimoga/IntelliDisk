@@ -20,6 +20,18 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "FileInformation.h"
 #include "NotifyDirCheck.h"
 
+constexpr auto BSIZE = 0x10000;
+
+typedef struct {
+	int nFileEvent;
+	std::wstring strFilePath;
+} NOTIFY_FILE_DATA;
+
+#define ID_STOP_PROCESS 0x01
+#define ID_FILE_DOWNLOAD 0x02
+#define ID_FILE_UPLOAD 0x03
+#define ID_FILE_DELETE 0x04
+
 class CMainFrame : public CFrameWndEx
 {
 	
@@ -34,6 +46,15 @@ public:
 	CTrayNotifyIcon m_pTrayIcon;
 	CNotifyDirCheck m_pNotifyDirCheck;
 	CImageList m_pImageList;
+	HANDLE m_hOccupiedSemaphore;
+	HANDLE m_hEmptySemaphore;
+	HANDLE m_hResourceMutex;
+	int m_nNextIn;
+	int m_nNextOut;
+	NOTIFY_FILE_DATA m_pResourceArray[BSIZE];
+	HANDLE m_hProducerThread;
+	HANDLE m_hConsumerThread;
+	DWORD m_dwThreadID[2];
 
 // Operations
 public:
@@ -73,7 +94,7 @@ protected:
 	afx_msg void OnOpenFolder();
 	afx_msg void OnViewOnline();
 public:
-	afx_msg void ShowMessage(std::wstring strMessage, std::wstring strFilePath);
+	afx_msg void ShowMessage(const std::wstring& strMessage, const std::wstring& strFilePath);
 
 	DECLARE_MESSAGE_MAP()
 };

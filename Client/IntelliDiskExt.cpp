@@ -139,33 +139,87 @@ bool InstallStartupApps(bool bInstallStartupApps)
 
 UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 {
-	CString strBuffer;
-	CString strFilePath = fiObject.GetFilePath();
-
-	if (IS_CREATE_FILE(faAction))
-	{
-		// strBuffer.Format(_T("Created %s"), strFilePath);
-		strBuffer.Format(_T("Uploading %s..."), strFilePath);
-	}
-	else if (IS_DELETE_FILE(faAction))
-	{
-		// strBuffer.Format(_T("Deleted %s"), strFilePath);
-		strBuffer.Format(_T("Deleting %s..."), strFilePath);
-	}
-	else if (IS_CHANGE_FILE(faAction))
-	{
-		// strBuffer.Format(_T("Changed %s"), strFilePath);
-		strBuffer.Format(_T("Uploading %s..."), strFilePath);
-	}
-	else
-	{
-		return 1; // error, stop thread
-	}
-
-	CMainFrame* pMainFrame = (CMainFrame*)lpData;
-	pMainFrame->ShowMessage(strBuffer.GetBuffer(), strFilePath.GetBuffer());
-	strBuffer.ReleaseBuffer();
-	strFilePath.ReleaseBuffer();
+	const int nFileEvent = (IS_DELETE_FILE(faAction)) ? ID_FILE_DELETE : ID_FILE_UPLOAD;
+	const std::wstring strFilePath = fiObject.GetFilePath();
+	AddNewItem(nFileEvent, strFilePath, lpData);
 
 	return 0; // success
+}
+
+DWORD WINAPI ProducerThread(LPVOID lpParam)
+{
+	Sleep(10000);
+	return 0;
+}
+
+DWORD WINAPI ConsumerThread(LPVOID lpParam)
+{
+	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
+	HANDLE& hOccupiedSemaphore = pMainFrame->m_hOccupiedSemaphore;
+	HANDLE& hEmptySemaphore = pMainFrame->m_hEmptySemaphore;
+	HANDLE& hResourceMutex = pMainFrame->m_hResourceMutex;
+
+	bool bThreadRunning = true;
+	while (bThreadRunning)
+	{
+		WaitForSingleObject(hOccupiedSemaphore, INFINITE);
+		WaitForSingleObject(hResourceMutex, INFINITE);
+
+		const int nFileEvent = pMainFrame->m_pResourceArray[pMainFrame->m_nNextOut].nFileEvent;
+		const std::wstring& strFilePath = pMainFrame->m_pResourceArray[pMainFrame->m_nNextOut].strFilePath;
+		TRACE(_T("[ConsumerThread] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
+		pMainFrame->m_nNextOut++;
+		pMainFrame->m_nNextOut %= BSIZE;
+
+		if (ID_STOP_PROCESS == nFileEvent)
+		{
+			TRACE(_T("Stopping...\n"));
+			bThreadRunning = false;
+		}
+		else if (ID_FILE_DOWNLOAD == nFileEvent)
+		{
+			CString strMessage;
+			strMessage.Format(_T("Uploading %s..."), strFilePath.c_str());
+			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
+			strMessage.ReleaseBuffer();
+		}
+		else if (ID_FILE_UPLOAD == nFileEvent)
+		{
+			CString strMessage;
+			strMessage.Format(_T("Downloading %s..."), strFilePath.c_str());
+			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
+			strMessage.ReleaseBuffer();
+		}
+		else if (ID_FILE_DELETE == nFileEvent)
+		{
+			CString strMessage;
+			strMessage.Format(_T("Deleting %s..."), strFilePath.c_str());
+			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
+			strMessage.ReleaseBuffer();
+		}
+
+		ReleaseSemaphore(hResourceMutex, 1, NULL);
+		ReleaseSemaphore(hEmptySemaphore, 1, NULL);
+	}
+	return 0;
+}
+
+void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lpParam)
+{
+	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
+	HANDLE& hOccupiedSemaphore = pMainFrame->m_hOccupiedSemaphore;
+	HANDLE& hEmptySemaphore = pMainFrame->m_hEmptySemaphore;
+	HANDLE& hResourceMutex = pMainFrame->m_hResourceMutex;
+
+	WaitForSingleObject(hEmptySemaphore, INFINITE);
+	WaitForSingleObject(hResourceMutex, INFINITE);
+
+	TRACE(_T("[AddNewItem] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
+	pMainFrame->m_pResourceArray[pMainFrame->m_nNextIn].nFileEvent = nFileEvent;
+	pMainFrame->m_pResourceArray[pMainFrame->m_nNextIn].strFilePath = strFilePath;
+	pMainFrame->m_nNextIn++;
+	pMainFrame->m_nNextIn %= BSIZE;
+
+	ReleaseSemaphore(hResourceMutex, 1, NULL);
+	ReleaseSemaphore(hOccupiedSemaphore, 1, NULL);
 }

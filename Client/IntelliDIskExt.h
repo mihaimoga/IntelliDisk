@@ -25,3 +25,6 @@ const std::wstring GetSpecialFolder();
 bool InstallStartupApps(bool bInstallStartupApps);
 
 UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData);
+DWORD WINAPI ProducerThread(LPVOID lpParam);
+DWORD WINAPI ConsumerThread(LPVOID lpParam);
+void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lpParam);
