@@ -202,6 +202,7 @@
     <None Include="res\IntelliDisk.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AppSettings.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IntelliDisk.h" />
     <ClInclude Include="ODBCWrappers.h" />

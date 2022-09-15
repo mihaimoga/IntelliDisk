@@ -48,6 +48,9 @@
     <ClInclude Include="..\ODBCWrappers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\AppSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QuickTest.cpp">
