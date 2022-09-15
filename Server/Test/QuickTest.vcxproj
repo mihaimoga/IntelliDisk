@@ -187,6 +187,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\SHA256.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HyperlinkStatic.h" />
     <ClInclude Include="pch.h" />
@@ -197,6 +198,7 @@
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\SHA256.cpp" />
     <ClCompile Include="HyperlinkStatic.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
