@@ -61,3 +61,7 @@ IntelliDisk.  If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include <fstream>
 #include <algorithm>
 #include <cctype>
+
+#include <sql.h>
+#include <sqlext.h>
+#include <atlstr.h>

@@ -58,6 +58,9 @@
     <ClInclude Include="SocMFC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ODBCWrappers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="IntelliDisk.rc">

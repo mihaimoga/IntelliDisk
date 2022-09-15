@@ -204,6 +204,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="IntelliDisk.h" />
+    <ClInclude Include="ODBCWrappers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SHA256.h" />
