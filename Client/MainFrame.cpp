@@ -57,11 +57,18 @@ CMainFrame::CMainFrame() noexcept
 	m_hOccupiedSemaphore = CreateSemaphore(NULL, 0, BSIZE, NULL);
 	m_hEmptySemaphore = CreateSemaphore(NULL, BSIZE, BSIZE, NULL);
 	m_hResourceMutex = CreateSemaphore(NULL, 1, 1, NULL);
+	m_hSocketMutex = CreateSemaphore(NULL, 1, 1, NULL);
 	m_nNextIn = m_nNextOut = 0;
 }
 
 CMainFrame::~CMainFrame()
 {
+	if (m_hSocketMutex != NULL)
+	{
+		VERIFY(CloseHandle(m_hSocketMutex));
+		m_hSocketMutex = NULL;
+	}
+
 	if (m_hResourceMutex != NULL)
 	{
 		VERIFY(CloseHandle(m_hResourceMutex));
@@ -151,6 +158,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// set your callback to work with each new event
 	m_pNotifyDirCheck.SetActionCallback(DirCallback);
 	m_pNotifyDirCheck.Run();
+
+	m_strServerIP = theApp.GetString(_T("ServerIP"), IntelliDiskIP);
+	m_nServerPort = theApp.GetInt(_T("ServerPort"), IntelliDiskPort);
 
 	m_hProducerThread = CreateThread(NULL, 0, ProducerThread, this, 0, &m_dwThreadID[0]);
 	ASSERT(m_hProducerThread != NULL);
@@ -275,7 +285,11 @@ void CMainFrame::OnHideApplication()
 void CMainFrame::OnSettings()
 {
 	CSettingsDlg dlgSettings(this);
-	dlgSettings.DoModal();
+	if (dlgSettings.DoModal() == IDOK)
+	{
+		m_strServerIP = theApp.GetString(_T("ServerIP"), IntelliDiskIP);
+		m_nServerPort = theApp.GetInt(_T("ServerPort"), IntelliDiskPort);
+	}
 }
 
 void CMainFrame::OnOpenFolder()

@@ -19,6 +19,19 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #define _CRT_SECURE_NO_WARNINGS
 
+/* This file is part of IntelliDisk application developed by Mihai MOGA.
+
+IntelliDisk is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Open
+Source Initiative, either version 3 of the License, or any later version.
+
+IntelliDisk is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
+
 #include "targetver.h"
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
@@ -93,3 +106,10 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include <atlctl.h>
 
 // https://www.iconfinder.com/iconsets/ios-11-glyphs
+
+#define IntelliDiskIP _T("127.0.0.1")
+#define IntelliDiskPort 8080
+
+#define STX 0x02
+#define ETX 0x03
+#define ACK 0x06

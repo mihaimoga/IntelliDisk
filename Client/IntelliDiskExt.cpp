@@ -146,9 +146,89 @@ UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 	return 0; // success
 }
 
+int g_nPingCount = 0;
+bool g_bThreadRunning = true;
+bool g_bIsConnected = false;
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
-	Sleep(10000);
+	const int MAX_BUFFER = 0x10000;
+	char pBuffer[MAX_BUFFER] = { 0, };
+	size_t nLength = 0;
+	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
+	CWSocket& m_pApplicationSocket = pMainFrame->m_pApplicationSocket;
+	HANDLE& hSocketMutex = pMainFrame->m_hSocketMutex;
+
+	while (g_bThreadRunning)
+	{
+		try
+		{
+			WaitForSingleObject(hSocketMutex, INFINITE);
+			if (!m_pApplicationSocket.IsCreated())
+			{
+				m_pApplicationSocket.CreateAndConnect(pMainFrame->m_strServerIP, pMainFrame->m_nServerPort);
+				ZeroMemory(pBuffer, sizeof(pBuffer));
+				strcpy(pBuffer, "IntelliDisk");
+				nLength = strlen(pBuffer) + 1;
+				VERIFY(m_pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+				ZeroMemory(pBuffer, sizeof(pBuffer));
+				if ((m_pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+				{
+					g_bIsConnected = false;
+					m_pApplicationSocket.Close();
+					ReleaseSemaphore(hSocketMutex, 1, NULL);
+					Sleep(60000);
+					continue;
+				}
+				TRACE(_T("Client connected!\n"));
+				g_bIsConnected = true;
+				MessageBeep(MB_OK);
+			}
+			else
+			{
+				if (m_pApplicationSocket.IsReadible(1000))
+				{
+					g_nPingCount = 0;
+				}
+				else
+				{
+					if (60 == ++g_nPingCount) // every 60 seconds
+					{
+						g_nPingCount = 0;
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						strcpy(pBuffer, "Ping");
+						nLength = strlen(pBuffer) + 1;
+						VERIFY(m_pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						if ((m_pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+						{
+							g_bIsConnected = false;
+							m_pApplicationSocket.Close();
+							ReleaseSemaphore(hSocketMutex, 1, NULL);
+							Sleep(60000);
+							continue;
+						}
+						TRACE(_T("Ping!\n"));
+					}
+				}
+			}
+			ReleaseSemaphore(hSocketMutex, 1, NULL);
+			Sleep(100);
+		}
+		catch (CWSocketException* pException)
+		{
+			TCHAR lpszErrorMessage[0x100] = { 0, };
+			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+			TRACE(_T("%s\n"), lpszErrorMessage);
+			delete pException;
+			pException = NULL;
+			g_bIsConnected = false;
+			ReleaseSemaphore(hSocketMutex, 1, NULL);
+			Sleep(60000);
+			continue;
+		}
+	}
+	m_pApplicationSocket.Close();
+	TRACE(_T("exiting...\n"));
 	return 0;
 }
 
@@ -159,8 +239,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 	HANDLE& hEmptySemaphore = pMainFrame->m_hEmptySemaphore;
 	HANDLE& hResourceMutex = pMainFrame->m_hResourceMutex;
 
-	bool bThreadRunning = true;
-	while (bThreadRunning)
+	while (g_bThreadRunning)
 	{
 		WaitForSingleObject(hOccupiedSemaphore, INFINITE);
 		WaitForSingleObject(hResourceMutex, INFINITE);
@@ -174,19 +253,19 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 		if (ID_STOP_PROCESS == nFileEvent)
 		{
 			TRACE(_T("Stopping...\n"));
-			bThreadRunning = false;
+			g_bThreadRunning = false;
 		}
 		else if (ID_FILE_DOWNLOAD == nFileEvent)
 		{
 			CString strMessage;
-			strMessage.Format(_T("Uploading %s..."), strFilePath.c_str());
+			strMessage.Format(_T("Downloading %s..."), strFilePath.c_str());
 			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
 			strMessage.ReleaseBuffer();
 		}
 		else if (ID_FILE_UPLOAD == nFileEvent)
 		{
 			CString strMessage;
-			strMessage.Format(_T("Downloading %s..."), strFilePath.c_str());
+			strMessage.Format(_T("Uploading %s..."), strFilePath.c_str());
 			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
 			strMessage.ReleaseBuffer();
 		}

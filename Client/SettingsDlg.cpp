@@ -54,7 +54,7 @@ BOOL CSettingsDlg::OnInitDialog()
 
 	m_ctrlMachineID.SetWindowText(utf8_to_wstring(GetMachineID()).c_str());
 	m_ctrlSpecialFolder.SetWindowText(GetSpecialFolder().c_str());
-	CString strServerIP = theApp.GetString(_T("ServerIP"), _T("127.0.0.1"));
+	CString strServerIP = theApp.GetString(_T("ServerIP"), IntelliDiskIP);
 	const int nServer1 = strServerIP.Find(_T('.'), 0);
 	const int nServer2 = strServerIP.Find(_T('.'), nServer1 + 1);
 	const int nServer3 = strServerIP.Find(_T('.'), nServer2 + 1);
@@ -63,7 +63,7 @@ BOOL CSettingsDlg::OnInitDialog()
 		(BYTE)_tstoi(strServerIP.Mid(nServer2 + 1, nServer3 - nServer2)),
 		(BYTE)_tstoi(strServerIP.Mid(nServer3 + 1, strServerIP.GetLength() - nServer3)));
 	CString strServerPort;
-	strServerPort.Format(_T("%d"), theApp.GetInt(_T("ServerPort"), 8080));
+	strServerPort.Format(_T("%d"), theApp.GetInt(_T("ServerPort"), IntelliDiskPort));
 	m_ctrlServerPort.SetWindowText(strServerPort);
 	m_ctrlServerPort.SetLimitText(5);
 	m_ctrlStartupApps.SetCheck(theApp.GetInt(_T("StartupApps"), 0));

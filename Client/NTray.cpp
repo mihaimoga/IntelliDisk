@@ -788,47 +788,47 @@ bool CTrayNotifyIcon::SetBalloonDetails(_In_z_ LPCTSTR pszBalloonText, _In_z_ LP
 	m_NotifyIconData.uTimeout = nTimeout;
 	switch (style)
 	{
-	case BalloonStyle::Warning:
-	{
-		m_NotifyIconData.dwInfoFlags = NIIF_WARNING;
-		break;
-	}
-	case BalloonStyle::Error:
-	{
-		m_NotifyIconData.dwInfoFlags = NIIF_ERROR;
-		break;
-	}
-	case BalloonStyle::Info:
-	{
-		m_NotifyIconData.dwInfoFlags = NIIF_INFO;
-		break;
-	}
-	case BalloonStyle::None:
-	{
-		m_NotifyIconData.dwInfoFlags = NIIF_NONE;
-		break;
-	}
-	case BalloonStyle::User:
-	{
-		if (hBalloonIcon != nullptr)
-			m_NotifyIconData.hBalloonIcon = hBalloonIcon;
-		else
+		case BalloonStyle::Warning:
+		{
+			m_NotifyIconData.dwInfoFlags = NIIF_WARNING;
+			break;
+		}
+		case BalloonStyle::Error:
+		{
+			m_NotifyIconData.dwInfoFlags = NIIF_ERROR;
+			break;
+		}
+		case BalloonStyle::Info:
+		{
+			m_NotifyIconData.dwInfoFlags = NIIF_INFO;
+			break;
+		}
+		case BalloonStyle::None:
+		{
+			m_NotifyIconData.dwInfoFlags = NIIF_NONE;
+			break;
+		}
+		case BalloonStyle::User:
+		{
+			if (hBalloonIcon != nullptr)
+				m_NotifyIconData.hBalloonIcon = hBalloonIcon;
+			else
+			{
+#pragma warning(suppress: 26477)
+				ATLASSERT(hUserIcon != nullptr); //You forget to provide a user icon
+				m_NotifyIconData.uFlags |= NIF_ICON;
+				m_NotifyIconData.hIcon = hUserIcon;
+			}
+
+			m_NotifyIconData.dwInfoFlags = NIIF_USER;
+			break;
+		}
+		default:
 		{
 #pragma warning(suppress: 26477)
-			ATLASSERT(hUserIcon != nullptr); //You forget to provide a user icon
-			m_NotifyIconData.uFlags |= NIF_ICON;
-			m_NotifyIconData.hIcon = hUserIcon;
+			ATLASSERT(false);
+			break;
 		}
-
-		m_NotifyIconData.dwInfoFlags = NIIF_USER;
-		break;
-	}
-	default:
-	{
-#pragma warning(suppress: 26477)
-		ATLASSERT(false);
-		break;
-	}
 	}
 	if (bNoSound)
 		m_NotifyIconData.dwInfoFlags |= NIIF_NOSOUND;

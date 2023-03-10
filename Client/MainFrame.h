@@ -19,8 +19,9 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "NTray.h"
 #include "FileInformation.h"
 #include "NotifyDirCheck.h"
+#include "SocMFC.h"
 
-constexpr auto BSIZE = 0x10000;
+constexpr auto BSIZE = 0x10000; // this is only for testing, not for the final commercial application
 
 typedef struct {
 	int nFileEvent;
@@ -49,12 +50,16 @@ public:
 	HANDLE m_hOccupiedSemaphore;
 	HANDLE m_hEmptySemaphore;
 	HANDLE m_hResourceMutex;
+	HANDLE m_hSocketMutex;
 	int m_nNextIn;
 	int m_nNextOut;
 	NOTIFY_FILE_DATA m_pResourceArray[BSIZE];
 	HANDLE m_hProducerThread;
 	HANDLE m_hConsumerThread;
 	DWORD m_dwThreadID[2];
+	CWSocket m_pApplicationSocket;
+	CString m_strServerIP;
+	int m_nServerPort;
 
 // Operations
 public:

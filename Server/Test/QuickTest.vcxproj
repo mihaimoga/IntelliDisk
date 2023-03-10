@@ -188,6 +188,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\AppSettings.h" />
+    <ClInclude Include="..\IntelliDiskExt.h" />
     <ClInclude Include="..\ODBCWrappers.h" />
     <ClInclude Include="..\SHA256.h" />
     <ClInclude Include="..\SocMFC.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="VersionInfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\IntelliDiskExt.cpp" />
     <ClCompile Include="..\SHA256.cpp" />
     <ClCompile Include="..\SocMFC.cpp" />
     <ClCompile Include="HyperlinkStatic.cpp" />

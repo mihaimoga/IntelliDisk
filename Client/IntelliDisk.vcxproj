@@ -188,12 +188,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChildView.h" />
+    <ClInclude Include="IntelliDiskExt.h" />
     <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="FileInformation.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HyperlinkStatic.h" />
     <ClInclude Include="IntelliDisk.h" />
-    <ClInclude Include="IntelliDIskExt.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="NotifyDirCheck.h" />
     <ClInclude Include="NTray.h" />

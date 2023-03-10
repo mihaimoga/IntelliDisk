@@ -22,6 +22,8 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "VersionInfo.h"
 #include "HyperlinkStatic.h"
 
+#include "../IntelliDiskExt.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -143,6 +145,7 @@ BEGIN_MESSAGE_MAP(CQuickTestDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 // CQuickTestDlg message handlers
@@ -177,6 +180,7 @@ BOOL CQuickTestDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	StartProcessingThread();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -228,4 +232,11 @@ void CQuickTestDlg::OnPaint()
 HCURSOR CQuickTestDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CQuickTestDlg::OnDestroy()
+{
+	StopProcessingThread();
+
+	CDialog::OnDestroy();
 }
