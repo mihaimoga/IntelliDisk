@@ -57,6 +57,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 	size_t nLength = 0;
 	CWSocket* pApplicationSocket = (CWSocket*)lpParam;
 	ASSERT(pApplicationSocket->IsCreated());
+	std::wstring strComputerID;
 
 	while (bThreadRunning)
 	{
@@ -72,6 +73,44 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 					pBuffer[nLength++] = ACK;
 					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
 					TRACE(_T("Client connected!\n"));
+					size_t nComputerLength = 0;
+					nLength = sizeof(nComputerLength);
+					if ((pApplicationSocket->Receive(&nComputerLength, (int)nLength) == nLength))
+					{
+						nLength = 0;
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						pBuffer[nLength++] = ACK;
+						VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
+						nLength = 0;
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						while (nLength < nComputerLength)
+						{
+							const int nReturn = pApplicationSocket->Receive(pBuffer + nLength, (int)(nComputerLength - nLength));
+							if (nReturn <= 0)
+							{
+								Sleep(100);
+							}
+							else
+							{
+								nLength += nReturn;
+							}
+						}
+						strComputerID = utf8_to_wstring(pBuffer);
+						nLength = 0;
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						pBuffer[nLength++] = ACK;
+						VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
+					}
+					TRACE(_T("Logged In: %s!\n"), strComputerID.c_str());
+				}
+				else if (strcmp("Close", pBuffer) == 0)
+				{
+					nLength = 0;
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					pBuffer[nLength++] = ACK;
+					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
+					TRACE(_T("Logged Out: %s!\n"), strComputerID.c_str());
+					break;
 				}
 				else if (strcmp("Ping", pBuffer) == 0)
 				{
@@ -80,6 +119,44 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 					pBuffer[nLength++] = ACK;
 					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
 					TRACE(_T("Ping!\n"));
+				}
+				else if (strcmp("Download", pBuffer) == 0)
+				{
+				}
+				else if (strcmp("Upload", pBuffer) == 0)
+				{
+				}
+				else if (strcmp("Delete", pBuffer) == 0)
+				{
+					nLength = 0;
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					pBuffer[nLength++] = ACK;
+					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
+					size_t nFileNameLength = 0;
+					nLength = sizeof(nFileNameLength);
+					if ((pApplicationSocket->Receive(&nFileNameLength, (int)nLength) == nLength))
+					{
+						nLength = 0;
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						while (nLength < nFileNameLength)
+						{
+							const int nReturn = pApplicationSocket->Receive(pBuffer + nLength, (int)(nFileNameLength - nLength));
+							if (nReturn <= 0)
+							{
+								Sleep(100);
+							}
+							else
+							{
+								nLength += nReturn;
+							}
+						}
+						const std::wstring& strFilePath = utf8_to_wstring(pBuffer);
+						nLength = 0;
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						pBuffer[nLength++] = ACK;
+						VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
+						TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
+					}
 				}
 			}
 		}

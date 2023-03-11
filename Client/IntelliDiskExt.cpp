@@ -146,16 +146,17 @@ UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 	return 0; // success
 }
 
+const int MAX_BUFFER = 0x10000;
 int g_nPingCount = 0;
 bool g_bThreadRunning = true;
 bool g_bIsConnected = false;
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
-	const int MAX_BUFFER = 0x10000;
 	char pBuffer[MAX_BUFFER] = { 0, };
 	size_t nLength = 0;
+
 	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
-	CWSocket& m_pApplicationSocket = pMainFrame->m_pApplicationSocket;
+	CWSocket& pApplicationSocket = pMainFrame->m_pApplicationSocket;
 	HANDLE& hSocketMutex = pMainFrame->m_hSocketMutex;
 
 	while (g_bThreadRunning)
@@ -163,29 +164,52 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 		try
 		{
 			WaitForSingleObject(hSocketMutex, INFINITE);
-			if (!m_pApplicationSocket.IsCreated())
+			if (!pApplicationSocket.IsCreated())
 			{
-				m_pApplicationSocket.CreateAndConnect(pMainFrame->m_strServerIP, pMainFrame->m_nServerPort);
+				pApplicationSocket.CreateAndConnect(pMainFrame->m_strServerIP, pMainFrame->m_nServerPort);
 				ZeroMemory(pBuffer, sizeof(pBuffer));
 				strcpy(pBuffer, "IntelliDisk");
 				nLength = strlen(pBuffer) + 1;
-				VERIFY(m_pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+				VERIFY(pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
 				ZeroMemory(pBuffer, sizeof(pBuffer));
-				if ((m_pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+				if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
 				{
 					g_bIsConnected = false;
-					m_pApplicationSocket.Close();
+					pApplicationSocket.Close();
 					ReleaseSemaphore(hSocketMutex, 1, NULL);
 					Sleep(60000);
 					continue;
 				}
 				TRACE(_T("Client connected!\n"));
+				const std::string strMachineID = GetMachineID();
+				size_t nComputerLength = strMachineID.length() + 1;
+				VERIFY(pApplicationSocket.Send(&nComputerLength, sizeof(nComputerLength)) == sizeof(nComputerLength));
+				ZeroMemory(pBuffer, sizeof(pBuffer));
+				if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+				{
+					g_bIsConnected = false;
+					pApplicationSocket.Close();
+					ReleaseSemaphore(hSocketMutex, 1, NULL);
+					Sleep(60000);
+					continue;
+				}
+				VERIFY(pApplicationSocket.Send(strMachineID.c_str(), (int)nComputerLength) == nComputerLength);
+				ZeroMemory(pBuffer, sizeof(pBuffer));
+				if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+				{
+					g_bIsConnected = false;
+					pApplicationSocket.Close();
+					ReleaseSemaphore(hSocketMutex, 1, NULL);
+					Sleep(60000);
+					continue;
+				}
+				TRACE(_T("Logged In!\n"));
 				g_bIsConnected = true;
 				MessageBeep(MB_OK);
 			}
 			else
 			{
-				if (m_pApplicationSocket.IsReadible(1000))
+				if (pApplicationSocket.IsReadible(1000))
 				{
 					g_nPingCount = 0;
 				}
@@ -197,12 +221,12 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 						ZeroMemory(pBuffer, sizeof(pBuffer));
 						strcpy(pBuffer, "Ping");
 						nLength = strlen(pBuffer) + 1;
-						VERIFY(m_pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+						VERIFY(pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
 						ZeroMemory(pBuffer, sizeof(pBuffer));
-						if ((m_pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+						if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
 						{
 							g_bIsConnected = false;
-							m_pApplicationSocket.Close();
+							pApplicationSocket.Close();
 							ReleaseSemaphore(hSocketMutex, 1, NULL);
 							Sleep(60000);
 							continue;
@@ -227,20 +251,28 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 			continue;
 		}
 	}
-	m_pApplicationSocket.Close();
+	pApplicationSocket.Close();
 	TRACE(_T("exiting...\n"));
 	return 0;
 }
 
 DWORD WINAPI ConsumerThread(LPVOID lpParam)
 {
+	char pBuffer[MAX_BUFFER] = { 0, };
+	size_t nLength = 0;
+
 	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
 	HANDLE& hOccupiedSemaphore = pMainFrame->m_hOccupiedSemaphore;
 	HANDLE& hEmptySemaphore = pMainFrame->m_hEmptySemaphore;
 	HANDLE& hResourceMutex = pMainFrame->m_hResourceMutex;
+	HANDLE& hSocketMutex = pMainFrame->m_hSocketMutex;
+
+	CWSocket& pApplicationSocket = pMainFrame->m_pApplicationSocket;
 
 	while (g_bThreadRunning)
 	{
+		bool bSuccessfulOperation = true;
+
 		WaitForSingleObject(hOccupiedSemaphore, INFINITE);
 		WaitForSingleObject(hResourceMutex, INFINITE);
 
@@ -279,6 +311,80 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 
 		ReleaseSemaphore(hResourceMutex, 1, NULL);
 		ReleaseSemaphore(hEmptySemaphore, 1, NULL);
+
+		while (g_bThreadRunning && !g_bIsConnected);
+
+		WaitForSingleObject(hSocketMutex, INFINITE);
+
+		try
+		{
+			if (pApplicationSocket.IsWritable(1000))
+			{
+				if (ID_STOP_PROCESS == nFileEvent)
+				{
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					strcpy(pBuffer, "Close");
+					nLength = strlen(pBuffer) + 1;
+					VERIFY(pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+					{
+						bSuccessfulOperation = false;
+					}
+				}
+				else if (ID_FILE_DOWNLOAD == nFileEvent)
+				{
+				}
+				else if (ID_FILE_UPLOAD == nFileEvent)
+				{
+				}
+				else if (ID_FILE_DELETE == nFileEvent)
+				{
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					strcpy(pBuffer, "Delete");
+					nLength = strlen(pBuffer) + 1;
+					VERIFY(pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+					{
+						bSuccessfulOperation = false;
+					}
+					else
+					{
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						const std::string strASCII = wstring_to_utf8(strFilePath);
+						const size_t nFileNameLength = strASCII.length();
+						CopyMemory(pBuffer, &nFileNameLength, sizeof(nFileNameLength));
+						CopyMemory(pBuffer + sizeof(nFileNameLength), strASCII.c_str(), nFileNameLength + 1);
+						nLength = sizeof(nFileNameLength) + nFileNameLength + 1;
+						VERIFY(pApplicationSocket.Send(pBuffer, (int)nLength) == nLength);
+						ZeroMemory(pBuffer, sizeof(pBuffer));
+						if ((pApplicationSocket.Receive(pBuffer, sizeof(pBuffer)) != 1) || (ACK != pBuffer[0]))
+						{
+							bSuccessfulOperation = false;
+						}
+						TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
+					}
+				}
+			}
+		}
+		catch (CWSocketException* pException)
+		{
+			TCHAR lpszErrorMessage[0x100] = { 0, };
+			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+			TRACE(_T("%s\n"), lpszErrorMessage);
+			delete pException;
+			pException = NULL;
+			bSuccessfulOperation = false;
+		}
+
+		ReleaseSemaphore(hSocketMutex, 1, NULL);
+
+		if (!bSuccessfulOperation)
+		{
+			TRACE(_T("Handle error!\n"));
+			AddNewItem(nFileEvent, strFilePath, lpParam);
+		}
 	}
 	return 0;
 }
