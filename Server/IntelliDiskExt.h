@@ -13,14 +13,14 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #pragma once
 
-inline byte calcLRC(byte *buffer, const int length)
+inline byte calcLRC(byte* buffer, const int length)
 {
 	byte nLRC = 0;
 	for (int i = 0; i < length; nLRC = nLRC ^ buffer[i], i++);
 	return nLRC;
 }
 
-inline byte calcLRC(const std::vector<byte> &buffer)
+inline byte calcLRC(const std::vector<byte>& buffer)
 {
 	byte nLRC = 0;
 	for (auto i = buffer.begin(); i != buffer.end(); ++i)

@@ -25,6 +25,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define STX 0x02
 #define ETX 0x03
 #define ACK 0x06
+#define NAK 0x15
 
 constexpr auto BSIZE = 0x10000; // this is only for testing, not for the final commercial application
 
@@ -50,11 +51,76 @@ std::string wstring_to_utf8(const std::wstring& str)
 	return myconv.to_bytes(str);
 }
 
+const int MAX_BUFFER = 0x10000;
+
+bool ReadBuffer(CWSocket* pApplicationSocket, char* pBuffer, int& nLength)
+{
+	int nCount = 0;
+	char nReturn = ACK;
+
+	try
+	{
+		do {
+			if ((nLength = pApplicationSocket->Receive(pBuffer, nLength)) > 0)
+			{
+				nReturn = (pBuffer[nLength - 1] == calcLRC((byte*)&pBuffer[3], (nLength - 5))) ? ACK : NAK;
+				VERIFY(pApplicationSocket->Send(&nReturn, sizeof(nReturn)) == 1);
+			}
+			else
+				return false;
+		} while ((nReturn != ACK) && (++nCount <= 3));
+	}
+	catch (CWSocketException* pException)
+	{
+		TCHAR lpszErrorMessage[0x100] = { 0, };
+		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+		TRACE(_T("%s\n"), lpszErrorMessage);
+		delete pException;
+		pException = NULL;
+		return false;
+	}
+	return true;
+}
+
+bool WriteBuffer(CWSocket* pApplicationSocket, const char* pBuffer, int nLength)
+{
+	int nCount = 0;
+	char nReturn = ACK;
+	char pPacket[MAX_BUFFER] = { 0, };
+
+	try
+	{
+		ASSERT(nLength < sizeof(pPacket));
+		ZeroMemory(pPacket, sizeof(pPacket));
+		CopyMemory(&pPacket[3], pBuffer, nLength);
+		pPacket[0] = STX;
+		pPacket[1] = nLength / 0x100;
+		pPacket[2] = nLength % 0x100;
+		pPacket[3 + nLength] = ETX;
+		pPacket[4 + nLength] = calcLRC((byte*)pBuffer, nLength);
+		do {
+			if (pApplicationSocket->Send(pPacket, (5 + nLength)) == (5 + nLength))
+			{
+				VERIFY(pApplicationSocket->Receive(&nReturn, sizeof(nReturn)) == 1);
+			}
+		} while ((nReturn != ACK) && (++nCount <= 3));
+	}
+	catch (CWSocketException* pException)
+	{
+		TCHAR lpszErrorMessage[0x100] = { 0, };
+		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+		TRACE(_T("%s\n"), lpszErrorMessage);
+		delete pException;
+		pException = NULL;
+		return false;
+	}
+	return (nReturn == ACK);
+}
+
 DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 {
-	const int MAX_BUFFER = 0x10000;
 	char pBuffer[MAX_BUFFER] = { 0, };
-	size_t nLength = 0;
+	int nLength = 0;
 	CWSocket* pApplicationSocket = (CWSocket*)lpParam;
 	ASSERT(pApplicationSocket->IsCreated());
 	std::wstring strComputerID;
@@ -65,99 +131,84 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 		{
 			if (pApplicationSocket->IsReadible(10000))
 			{
+				nLength = sizeof(pBuffer);
 				ZeroMemory(pBuffer, sizeof(pBuffer));
-				if ((pApplicationSocket->Receive(pBuffer, sizeof(pBuffer)) == (strlen("IntelliDisk") + 1)) && (strcmp("IntelliDisk", pBuffer) == 0))
+				if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
 				{
-					nLength = 0;
-					ZeroMemory(pBuffer, sizeof(pBuffer));
-					pBuffer[nLength++] = ACK;
-					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-					TRACE(_T("Client connected!\n"));
-					size_t nComputerLength = 0;
-					nLength = sizeof(nComputerLength);
-					if ((pApplicationSocket->Receive(&nComputerLength, (int)nLength) == nLength))
+					const std::string strCommand = &pBuffer[3];
+					if (strCommand.compare("IntelliDisk") == 0)
 					{
-						nLength = 0;
+						TRACE(_T("Client connected!\n"));
+						nLength = sizeof(pBuffer);
 						ZeroMemory(pBuffer, sizeof(pBuffer));
-						pBuffer[nLength++] = ACK;
-						VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-						nLength = 0;
-						ZeroMemory(pBuffer, sizeof(pBuffer));
-						while (nLength < nComputerLength)
+						if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
 						{
-							const int nReturn = pApplicationSocket->Receive(pBuffer + nLength, (int)(nComputerLength - nLength));
-							if (nReturn <= 0)
+							const std::string strCommand = &pBuffer[3];
+							strComputerID = utf8_to_wstring(strCommand);
+							TRACE(_T("Logged In: %s!\n"), strComputerID.c_str());
+						}
+					}
+					else
+					{
+						if (strCommand.compare("Close") == 0)
+						{
+							TRACE(_T("Logged Out: %s!\n"), strComputerID.c_str());
+							break;
+						}
+						else
+						{
+							if (strCommand.compare("Ping") == 0)
 							{
-								Sleep(100);
+								TRACE(_T("Ping!\n"));
 							}
 							else
 							{
-								nLength += nReturn;
+								if (strCommand.compare("Download") == 0)
+								{
+									nLength = sizeof(pBuffer);
+									ZeroMemory(pBuffer, sizeof(pBuffer));
+									if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
+									{
+										const std::string strCommand = &pBuffer[3];
+										const std::wstring& strFilePath = utf8_to_wstring(strCommand);
+										TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
+									}
+								}
+								else
+								{
+									if (strCommand.compare("Upload") == 0)
+									{
+										nLength = sizeof(pBuffer);
+										ZeroMemory(pBuffer, sizeof(pBuffer));
+										if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
+										{
+											const std::string strCommand = &pBuffer[3];
+											const std::wstring& strFilePath = utf8_to_wstring(strCommand);
+											TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
+										}
+									}
+									else
+									{
+										if (strCommand.compare("Delete") == 0)
+										{
+											nLength = sizeof(pBuffer);
+											ZeroMemory(pBuffer, sizeof(pBuffer));
+											if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
+											{
+												const std::string strCommand = &pBuffer[3];
+												const std::wstring& strFilePath = utf8_to_wstring(strCommand);
+												TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
+											}
+										}
+									}
+								}
 							}
 						}
-						strComputerID = utf8_to_wstring(pBuffer);
-						nLength = 0;
-						ZeroMemory(pBuffer, sizeof(pBuffer));
-						pBuffer[nLength++] = ACK;
-						VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-					}
-					TRACE(_T("Logged In: %s!\n"), strComputerID.c_str());
-				}
-				else if (strcmp("Close", pBuffer) == 0)
-				{
-					nLength = 0;
-					ZeroMemory(pBuffer, sizeof(pBuffer));
-					pBuffer[nLength++] = ACK;
-					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-					TRACE(_T("Logged Out: %s!\n"), strComputerID.c_str());
-					break;
-				}
-				else if (strcmp("Ping", pBuffer) == 0)
-				{
-					nLength = 0;
-					ZeroMemory(pBuffer, sizeof(pBuffer));
-					pBuffer[nLength++] = ACK;
-					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-					TRACE(_T("Ping!\n"));
-				}
-				else if (strcmp("Download", pBuffer) == 0)
-				{
-				}
-				else if (strcmp("Upload", pBuffer) == 0)
-				{
-				}
-				else if (strcmp("Delete", pBuffer) == 0)
-				{
-					nLength = 0;
-					ZeroMemory(pBuffer, sizeof(pBuffer));
-					pBuffer[nLength++] = ACK;
-					VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-					size_t nFileNameLength = 0;
-					nLength = sizeof(nFileNameLength);
-					if ((pApplicationSocket->Receive(&nFileNameLength, (int)nLength) == nLength))
-					{
-						nLength = 0;
-						ZeroMemory(pBuffer, sizeof(pBuffer));
-						while (nLength < nFileNameLength)
-						{
-							const int nReturn = pApplicationSocket->Receive(pBuffer + nLength, (int)(nFileNameLength - nLength));
-							if (nReturn <= 0)
-							{
-								Sleep(100);
-							}
-							else
-							{
-								nLength += nReturn;
-							}
-						}
-						const std::wstring& strFilePath = utf8_to_wstring(pBuffer);
-						nLength = 0;
-						ZeroMemory(pBuffer, sizeof(pBuffer));
-						pBuffer[nLength++] = ACK;
-						VERIFY(pApplicationSocket->Send(pBuffer, (int)nLength) == nLength);
-						TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
 					}
 				}
+			}
+			else
+			{
 			}
 		}
 		catch (CWSocketException* pException)
