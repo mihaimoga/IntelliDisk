@@ -1,4 +1,4 @@
-/* This file is part of IntelliDisk application developed by Mihai MOGA.
+/* This file is part of IntelliDisk application developed by Stefan-Mihai MOGA.
 
 IntelliDisk is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Open
@@ -19,7 +19,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #define _CRT_SECURE_NO_WARNINGS
 
-/* This file is part of IntelliDisk application developed by Mihai MOGA.
+/* This file is part of IntelliDisk application developed by Stefan-Mihai MOGA.
 
 IntelliDisk is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Open
