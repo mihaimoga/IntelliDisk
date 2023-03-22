@@ -54,8 +54,8 @@ CMainFrame::CMainFrame() noexcept
 {
 	m_hMainFrameIcon = CTrayNotifyIcon::LoadIcon(IDR_MAINFRAME);
 	m_MainButton = NULL;
-	m_hOccupiedSemaphore = CreateSemaphore(NULL, 0, BSIZE, NULL);
-	m_hEmptySemaphore = CreateSemaphore(NULL, BSIZE, BSIZE, NULL);
+	m_hOccupiedSemaphore = CreateSemaphore(NULL, 0, NOTIFY_FILE_SIZE, NULL);
+	m_hEmptySemaphore = CreateSemaphore(NULL, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, NULL);
 	m_hResourceMutex = CreateSemaphore(NULL, 1, 1, NULL);
 	m_hSocketMutex = CreateSemaphore(NULL, 1, 1, NULL);
 	m_nNextIn = m_nNextOut = 0;

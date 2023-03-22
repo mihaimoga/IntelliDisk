@@ -65,3 +65,5 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include <sql.h>
 #include <sqlext.h>
 #include <atlstr.h>
+
+#define CWSOCKET_MFC_EXTENSIONS

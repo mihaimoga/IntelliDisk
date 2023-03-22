@@ -11,70 +11,74 @@ or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 You should have received a copy of the GNU General Public License along with
 IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
-// IntelliDisk.cpp : Defines the initialization routines for the DLL.
+// IntelliDisk.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include "pch.h"
 #include "framework.h"
 #include "IntelliDisk.h"
+#include "ServiceInstaller.h"
+#include "ServiceBase.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-//
-//TODO: If this DLL is dynamically linked against the MFC DLLs,
-//		any functions exported from this DLL which call into
-//		MFC must have the AFX_MANAGE_STATE macro added at the
-//		very beginning of the function.
-//
-//		For example:
-//
-//		extern "C" BOOL PASCAL EXPORT ExportedFunction()
-//		{
-//			AFX_MANAGE_STATE(AfxGetStaticModuleState());
-//			// normal function body here
-//		}
-//
-//		It is very important that this macro appear in each
-//		function, prior to any calls into MFC.  This means that
-//		it must appear as the first statement within the
-//		function, even before any object variable declarations
-//		as their constructors may generate calls into the MFC
-//		DLL.
-//
-//		Please see MFC Technical Notes 33 and 58 for additional
-//		details.
-//
+// Internal name of the service
+#define SERVICE_NAME             L"IntelliDisk"
 
-// CIntelliDiskApp
+// Displayed name of the service
+#define SERVICE_DISPLAY_NAME     L"IntelliDisk Service"
 
-BEGIN_MESSAGE_MAP(CIntelliDiskApp, CWinApp)
-END_MESSAGE_MAP()
+// Service start options.
+#define SERVICE_START_TYPE       SERVICE_DEMAND_START
 
-// CIntelliDiskApp construction
+// List of service dependencies - "dep1\0dep2\0\0"
+#define SERVICE_DEPENDENCIES     L""
 
-CIntelliDiskApp::CIntelliDiskApp()
+// The name of the account under which the service should run
+#define SERVICE_ACCOUNT          L"NT AUTHORITY\\LocalService"
+
+// The password to the service account name
+#define SERVICE_PASSWORD         NULL
+
+int wmain(int argc, wchar_t *argv[])
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
-}
-
-// The one and only CIntelliDiskApp object
-
-CIntelliDiskApp theApp;
-
-// CIntelliDiskApp initialization
-
-BOOL CIntelliDiskApp::InitInstance()
-{
-	CWinApp::InitInstance();
-
-	if (!AfxSocketInit())
+	if ((argc > 1) && ((*argv[1] == L'-' || (*argv[1] == L'/'))))
 	{
-		AfxMessageBox(IDP_SOCKETS_INIT_FAILED);
-		return FALSE;
+		if (_wcsicmp(L"install", argv[1] + 1) == 0)
+		{
+			// Install the service when the command is 
+			// "-install" or "/install".
+			InstallService(
+				SERVICE_NAME,               // Name of service
+				SERVICE_DISPLAY_NAME,       // Name to display
+				SERVICE_START_TYPE,         // Service start type
+				SERVICE_DEPENDENCIES,       // Dependencies
+				SERVICE_ACCOUNT,            // Service running account
+				SERVICE_PASSWORD            // Password of the account
+			);
+		}
+		else if (_wcsicmp(L"remove", argv[1] + 1) == 0)
+		{
+			// Uninstall the service when the command is 
+			// "-remove" or "/remove".
+			UninstallService(SERVICE_NAME);
+		}
+	}
+	else
+	{
+		wprintf(L"Parameters:\n");
+		wprintf(L" -install  to install the service.\n");
+		wprintf(L" -remove   to remove the service.\n");
+
+		CServiceBase service(SERVICE_NAME);
+		if (!CServiceBase::Run(service))
+		{
+			wprintf(L"Service failed to run w/err 0x%08lx\n", GetLastError());
+		}
 	}
 
-	return TRUE;
+	return 0;
 }
+

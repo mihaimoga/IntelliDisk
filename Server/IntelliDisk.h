@@ -11,29 +11,6 @@ or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 You should have received a copy of the GNU General Public License along with
 IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
-// IntelliDisk.h : main header file for the IntelliDisk DLL
-//
-
 #pragma once
 
-#ifndef __AFXWIN_H__
-	#error "include 'pch.h' before including this file for PCH"
-#endif
-
-#include "resource.h"		// main symbols
-
-// CIntelliDiskApp
-// See IntelliDisk.cpp for the implementation of this class
-//
-
-class CIntelliDiskApp : public CWinApp
-{
-public:
-	CIntelliDiskApp();
-
-// Overrides
-public:
-	virtual BOOL InitInstance();
-
-	DECLARE_MESSAGE_MAP()
-};
+#include "resource.h"

@@ -176,8 +176,8 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
 		TCHAR lpszErrorMessage[0x100] = { 0, };
 		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 		TRACE(_T("%s\n"), lpszErrorMessage);
-		delete pException;
-		pException = NULL;
+		// delete pException;
+		// pException = NULL;
 		return false;
 	}
 	return (nReturn == ACK);
@@ -215,7 +215,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 					{
 						TRACE(_T("Logged In!\n"));
 						g_bIsConnected = true;
-						MessageBeep(MB_OK);
+						// MessageBeep(MB_OK);
 					}
 				}
 			}
@@ -241,26 +241,25 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 			}
 
 			ReleaseSemaphore(hSocketMutex, 1, NULL);
-			Sleep(100);
 		}
 		catch (CWSocketException* pException)
 		{
 			TCHAR lpszErrorMessage[0x100] = { 0, };
 			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 			TRACE(_T("%s\n"), lpszErrorMessage);
-			delete pException;
-			pException = NULL;
+			// delete pException;
+			// pException = NULL;
 			g_bIsConnected = false;
 			ReleaseSemaphore(hSocketMutex, 1, NULL);
 			Sleep(60000);
 			continue;
 		}
 	}
-	pApplicationSocket.Close();
 	TRACE(_T("exiting...\n"));
 	return 0;
 }
 
+std::wstring g_strCurrentDocument;
 DWORD WINAPI ConsumerThread(LPVOID lpParam)
 {
 	char pBuffer[MAX_BUFFER] = { 0, };
@@ -285,7 +284,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 		const std::wstring& strFilePath = pMainFrame->m_pResourceArray[pMainFrame->m_nNextOut].strFilePath;
 		TRACE(_T("[ConsumerThread] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
 		pMainFrame->m_nNextOut++;
-		pMainFrame->m_nNextOut %= BSIZE;
+		pMainFrame->m_nNextOut %= NOTIFY_FILE_SIZE;
 
 		if (ID_STOP_PROCESS == nFileEvent)
 		{
@@ -298,6 +297,8 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 			strMessage.Format(_T("Downloading %s..."), strFilePath.c_str());
 			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
 			strMessage.ReleaseBuffer();
+
+			g_strCurrentDocument = strFilePath; // BUGFIX
 		}
 		else if (ID_FILE_UPLOAD == nFileEvent)
 		{
@@ -332,6 +333,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 					if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
 					{
 						TRACE("Closing...\n");
+						pApplicationSocket.Close();
 					}
 				}
 				else
@@ -392,18 +394,12 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 			TCHAR lpszErrorMessage[0x100] = { 0, };
 			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 			TRACE(_T("%s\n"), lpszErrorMessage);
-			delete pException;
-			pException = NULL;
+			// delete pException;
+			// pException = NULL;
 			bSuccessfulOperation = false;
 		}
 
 		ReleaseSemaphore(hSocketMutex, 1, NULL);
-
-		if (!bSuccessfulOperation)
-		{
-			TRACE(_T("Handle error!\n"));
-			AddNewItem(nFileEvent, strFilePath, lpParam);
-		}
 	}
 	return 0;
 }
@@ -415,6 +411,13 @@ void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lp
 	HANDLE& hEmptySemaphore = pMainFrame->m_hEmptySemaphore;
 	HANDLE& hResourceMutex = pMainFrame->m_hResourceMutex;
 
+	if ((g_strCurrentDocument.compare(strFilePath) == 0) &&
+		(ID_FILE_UPLOAD == nFileEvent)) // BUGFIX
+	{
+		g_strCurrentDocument = _T("");
+		return;
+	}
+
 	WaitForSingleObject(hEmptySemaphore, INFINITE);
 	WaitForSingleObject(hResourceMutex, INFINITE);
 
@@ -422,7 +425,7 @@ void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lp
 	pMainFrame->m_pResourceArray[pMainFrame->m_nNextIn].nFileEvent = nFileEvent;
 	pMainFrame->m_pResourceArray[pMainFrame->m_nNextIn].strFilePath = strFilePath;
 	pMainFrame->m_nNextIn++;
-	pMainFrame->m_nNextIn %= BSIZE;
+	pMainFrame->m_nNextIn %= NOTIFY_FILE_SIZE;
 
 	ReleaseSemaphore(hResourceMutex, 1, NULL);
 	ReleaseSemaphore(hOccupiedSemaphore, 1, NULL);

@@ -109,6 +109,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #define IntelliDiskIP _T("127.0.0.1")
 #define IntelliDiskPort 8080
+#define CWSOCKET_MFC_EXTENSIONS
 
 #define STX 0x02
 #define ETX 0x03

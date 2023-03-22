@@ -22,5 +22,6 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 // add headers that you want to pre-compile here
 #include "framework.h"
+#include <winsvc.h>
 
 #endif //PCH_H

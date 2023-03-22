@@ -23,7 +23,6 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
-
 // CChildView
 
 CChildView::CChildView()
@@ -34,15 +33,12 @@ CChildView::~CChildView()
 {
 }
 
-
 BEGIN_MESSAGE_MAP(CChildView, CWnd)
 	ON_WM_PAINT()
 	ON_WM_CREATE()
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
-
-
 
 // CChildView message handlers
 
@@ -94,14 +90,40 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
 
-	if (m_mfcListCtrl.GetSafeHwnd() != NULL)
-		m_mfcListCtrl.MoveWindow(0, 0, cx, cy);
+	if (GetListCtrl().GetSafeHwnd() != NULL)
+	{
+		GetListCtrl().MoveWindow(0, 0, cx, cy);
+		ResizeListCtrl();
+	}
 }
 
 BOOL CChildView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-	if (m_mfcListCtrl.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+	if (GetListCtrl().OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
 		return TRUE;
 
 	return CWnd::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+
+void CChildView::ResizeListCtrl()
+{
+	HDITEM hdItem = { 0 };
+	hdItem.cxy = 0;
+	hdItem.mask = HDI_WIDTH;
+	if (GetListCtrl().GetSafeHwnd() != NULL)
+	{
+		CRect rectClient;
+		GetListCtrl().GetClientRect(&rectClient);
+
+		CMFCHeaderCtrl& pHeaderCtrl = GetListCtrl().GetHeaderCtrl();
+		if (pHeaderCtrl.GetItem(0, &hdItem))
+		{
+			hdItem.cxy = rectClient.Width() - GetSystemMetrics(SM_CXVSCROLL);
+			if (pHeaderCtrl.SetItem(0, &hdItem))
+			{
+				GetListCtrl().Invalidate();
+				GetListCtrl().UpdateWindow();
+			}
+		}
+	}
 }
