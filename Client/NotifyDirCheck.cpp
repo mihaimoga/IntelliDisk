@@ -17,22 +17,23 @@ static char THIS_FILE[] = __FILE__;
 
 UINT DefaultNotificationCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 {
+	UNREFERENCED_PARAMETER(lpData);
 	CString csBuffer;
 	CString csFile = fiObject.GetFilePath();
 
 	if (IS_CREATE_FILE(faAction))
 	{
-		csBuffer.Format(_T("Created %s"), csFile);
+		csBuffer.Format(_T("Created %s"), static_cast<LPCWSTR>(csFile));
 		AfxMessageBox(csBuffer);
 	}
 	else if (IS_DELETE_FILE(faAction))
 	{
-		csBuffer.Format(_T("Deleted %s"), csFile);
+		csBuffer.Format(_T("Deleted %s"), static_cast<LPCWSTR>(csFile));
 		AfxMessageBox(csBuffer);
 	}
 	else if (IS_CHANGE_FILE(faAction))
 	{
-		csBuffer.Format(_T("Changed %s"), csFile);
+		csBuffer.Format(_T("Changed %s"), static_cast<LPCWSTR>(csFile));
 		AfxMessageBox(csBuffer);
 	}
 	else
@@ -55,14 +56,14 @@ static void ErrorMessage(CString failedSource)
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
+		nullptr,
 		dwLastError,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),// Default language
 		(LPTSTR)&lpMsgBuf,
 		0,
-		NULL);
+		nullptr);
 
-	csError.Format(_T("%s Error N%d\n%s"), failedSource, dwLastError, (LPCTSTR)lpMsgBuf);
+	csError.Format(_T("%s Error N%d\n%s"), static_cast<LPCWSTR>(failedSource), dwLastError, (LPCTSTR)lpMsgBuf);
 	AfxMessageBox(csError, MB_OK | MB_ICONSTOP);
 
 	// Free the buffer.
@@ -77,7 +78,7 @@ UINT NotifyDirThread(LPVOID pParam)
 {
 	BOOL bStop = FALSE;
 
-	HANDLE hDir = NULL;
+	HANDLE hDir = nullptr;
 
 	CNotifyDirCheck *pNDC = (CNotifyDirCheck *)pParam;
 
@@ -91,7 +92,7 @@ UINT NotifyDirThread(LPVOID pParam)
 	CFileInformation fi;
 
 
-	if (pNDC == NULL)
+	if (pNDC == nullptr)
 		return(0);
 
 	hDir = FindFirstChangeNotification(pNDC->GetDirectory(),
@@ -142,7 +143,7 @@ UINT NotifyDirThread(LPVOID pParam)
 		{
 			NOTIFICATION_CALLBACK_PTR ncpAction = pNDC->GetActionCallback();
 
-			POSITION fileListPos = NULL;
+			POSITION fileListPos = nullptr;
 
 			fileListPos = fileList.GetHeadPosition();
 
@@ -184,10 +185,10 @@ UINT NotifyDirThread(LPVOID pParam)
 CNotifyDirCheck::CNotifyDirCheck()
 {
 	SetDirectory(_T(""));
-	SetActionCallback(NULL);
-	SetData(NULL);
+	SetActionCallback(nullptr);
+	SetData(nullptr);
 	SetStop();
-	m_pThread = NULL;
+	m_pThread = nullptr;
 }
 
 CNotifyDirCheck::CNotifyDirCheck(CString csDir, NOTIFICATION_CALLBACK_PTR ncpAction, LPVOID lpData)
@@ -196,7 +197,7 @@ CNotifyDirCheck::CNotifyDirCheck(CString csDir, NOTIFICATION_CALLBACK_PTR ncpAct
 	SetActionCallback(ncpAction);
 	SetData(lpData);
 	SetStop();
-	m_pThread = NULL;
+	m_pThread = nullptr;
 }
 
 CNotifyDirCheck::~CNotifyDirCheck()
@@ -206,13 +207,13 @@ CNotifyDirCheck::~CNotifyDirCheck()
 
 BOOL CNotifyDirCheck::Run()
 {
-	if (IsRun() || m_pThread != NULL || m_csDir.IsEmpty())
+	if (IsRun() || m_pThread != nullptr || m_csDir.IsEmpty())
 		return FALSE;
 
 	SetRun();
 	m_pThread = AfxBeginThread(NotifyDirThread, this);
 
-	if (m_pThread == NULL)
+	if (m_pThread == nullptr)
 		SetStop();
 
 	return IsRun();
@@ -220,13 +221,13 @@ BOOL CNotifyDirCheck::Run()
 
 void CNotifyDirCheck::Stop()
 {
-	if (!IsRun() || m_pThread == NULL)
+	if (!IsRun() || m_pThread == nullptr)
 		return;
 
 	SetStop();
 
 	WaitForSingleObject(m_pThread->m_hThread, 2 * NOTIFICATION_TIMEOUT);
-	m_pThread = NULL;
+	m_pThread = nullptr;
 }
 
 UINT CNotifyDirCheck::Action(CFileInformation fiObject, EFileAction faAction)
@@ -236,17 +237,17 @@ UINT CNotifyDirCheck::Action(CFileInformation fiObject, EFileAction faAction)
 
 	if (IS_CREATE_FILE(faAction))
 	{
-		csBuffer.Format(_T("Created %s"), csFile);
+		csBuffer.Format(_T("Created %s"), static_cast<LPCWSTR>(csFile));
 		AfxMessageBox(csBuffer);
 	}
 	else if (IS_DELETE_FILE(faAction))
 	{
-		csBuffer.Format(_T("Deleted %s"), csFile);
+		csBuffer.Format(_T("Deleted %s"), static_cast<LPCWSTR>(csFile));
 		AfxMessageBox(csBuffer);
 	}
 	else if (IS_CHANGE_FILE(faAction))
 	{
-		csBuffer.Format(_T("Changed %s"), csFile);
+		csBuffer.Format(_T("Changed %s"), static_cast<LPCWSTR>(csFile));
 		AfxMessageBox(csBuffer);
 	}
 	else

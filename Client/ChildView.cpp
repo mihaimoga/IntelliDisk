@@ -90,7 +90,7 @@ void CChildView::OnSize(UINT nType, int cx, int cy)
 {
 	CWnd::OnSize(nType, cx, cy);
 
-	if (GetListCtrl().GetSafeHwnd() != NULL)
+	if (GetListCtrl().GetSafeHwnd() != nullptr)
 	{
 		GetListCtrl().MoveWindow(0, 0, cx, cy);
 		ResizeListCtrl();
@@ -110,7 +110,7 @@ void CChildView::ResizeListCtrl()
 	HDITEM hdItem = { 0 };
 	hdItem.cxy = 0;
 	hdItem.mask = HDI_WIDTH;
-	if (GetListCtrl().GetSafeHwnd() != NULL)
+	if (GetListCtrl().GetSafeHwnd() != nullptr)
 	{
 		CRect rectClient;
 		GetListCtrl().GetClientRect(&rectClient);

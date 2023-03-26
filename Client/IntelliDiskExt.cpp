@@ -93,8 +93,8 @@ return wstring_to_utf8(result);
 
 const std::wstring GetSpecialFolder()
 {
-	WCHAR* lpszSpecialFolderPath = NULL;
-	if ((SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, &lpszSpecialFolderPath)) == S_OK)
+	WCHAR* lpszSpecialFolderPath = nullptr;
+	if ((SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &lpszSpecialFolderPath)) == S_OK)
 	{
 		std::wstring result(lpszSpecialFolderPath);
 		CoTaskMemFree(lpszSpecialFolderPath);
@@ -113,7 +113,7 @@ bool InstallStartupApps(bool bInstallStartupApps)
 		if (bInstallStartupApps) // Add program to Starup Apps
 		{
 			TCHAR lpszApplicationBuffer[MAX_PATH + 1] = { 0, };
-			if (GetModuleFileName(NULL, lpszApplicationBuffer, MAX_PATH) > 0)
+			if (GetModuleFileName(nullptr, lpszApplicationBuffer, MAX_PATH) > 0)
 			{
 				std::wstring quoted(_T("\""));
 				quoted += lpszApplicationBuffer;
@@ -160,8 +160,8 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
 		ZeroMemory(pPacket, sizeof(pPacket));
 		CopyMemory(&pPacket[3], pBuffer, nLength);
 		pPacket[0] = STX;
-		pPacket[1] = nLength / 0x100;
-		pPacket[2] = nLength % 0x100;
+		pPacket[1] = (char)(nLength / 0x100);
+		pPacket[2] = (char)(nLength % 0x100);
 		pPacket[3 + nLength] = ETX;
 		pPacket[4 + nLength] = calcLRC((byte*) pBuffer, nLength);
 		do {
@@ -177,7 +177,7 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
 		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 		TRACE(_T("%s\n"), lpszErrorMessage);
 		// delete pException;
-		// pException = NULL;
+		// pException = nullptr;
 		return false;
 	}
 	return (nReturn == ACK);
@@ -188,7 +188,6 @@ bool g_bThreadRunning = true;
 bool g_bIsConnected = false;
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
-	char pBuffer[MAX_BUFFER] = { 0, };
 	int nLength = 0;
 
 	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
@@ -215,7 +214,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 					{
 						TRACE(_T("Logged In!\n"));
 						g_bIsConnected = true;
-						// MessageBeep(MB_OK);
+						MessageBeep(MB_OK);
 					}
 				}
 			}
@@ -240,7 +239,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 				}
 			}
 
-			ReleaseSemaphore(hSocketMutex, 1, NULL);
+			ReleaseSemaphore(hSocketMutex, 1, nullptr);
 		}
 		catch (CWSocketException* pException)
 		{
@@ -248,9 +247,9 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 			TRACE(_T("%s\n"), lpszErrorMessage);
 			// delete pException;
-			// pException = NULL;
+			// pException = nullptr;
 			g_bIsConnected = false;
-			ReleaseSemaphore(hSocketMutex, 1, NULL);
+			ReleaseSemaphore(hSocketMutex, 1, nullptr);
 			Sleep(60000);
 			continue;
 		}
@@ -262,7 +261,6 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 std::wstring g_strCurrentDocument;
 DWORD WINAPI ConsumerThread(LPVOID lpParam)
 {
-	char pBuffer[MAX_BUFFER] = { 0, };
 	int nLength = 0;
 
 	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
@@ -315,8 +313,8 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 			strMessage.ReleaseBuffer();
 		}
 
-		ReleaseSemaphore(hResourceMutex, 1, NULL);
-		ReleaseSemaphore(hEmptySemaphore, 1, NULL);
+		ReleaseSemaphore(hResourceMutex, 1, nullptr);
+		ReleaseSemaphore(hEmptySemaphore, 1, nullptr);
 
 		while (g_bThreadRunning && !g_bIsConnected);
 
@@ -395,11 +393,11 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 			TRACE(_T("%s\n"), lpszErrorMessage);
 			// delete pException;
-			// pException = NULL;
+			// pException = nullptr;
 			bSuccessfulOperation = false;
 		}
 
-		ReleaseSemaphore(hSocketMutex, 1, NULL);
+		ReleaseSemaphore(hSocketMutex, 1, nullptr);
 	}
 	return 0;
 }
@@ -427,6 +425,6 @@ void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lp
 	pMainFrame->m_nNextIn++;
 	pMainFrame->m_nNextIn %= NOTIFY_FILE_SIZE;
 
-	ReleaseSemaphore(hResourceMutex, 1, NULL);
-	ReleaseSemaphore(hOccupiedSemaphore, 1, NULL);
+	ReleaseSemaphore(hResourceMutex, 1, nullptr);
+	ReleaseSemaphore(hOccupiedSemaphore, 1, nullptr);
 }

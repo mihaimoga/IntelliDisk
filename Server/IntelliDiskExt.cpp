@@ -96,7 +96,7 @@ bool ReadBuffer(CWSocket& pApplicationSocket, char* pBuffer, int& nLength)
 		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 		TRACE(_T("%s\n"), lpszErrorMessage);
 		// delete pException;
-		// pException = NULL;
+		// pException = nullptr;
 		return false;
 	}
 	return true;
@@ -114,7 +114,7 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
 		ZeroMemory(pPacket, sizeof(pPacket));
 		CopyMemory(&pPacket[3], pBuffer, nLength);
 		pPacket[0] = STX;
-		pPacket[1] = nLength / 0x100;
+		pPacket[1] = (char)(nLength / 0x100);
 		pPacket[2] = nLength % 0x100;
 		pPacket[3 + nLength] = ETX;
 		pPacket[4 + nLength] = calcLRC((byte*)pBuffer, nLength);
@@ -131,7 +131,7 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
 		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 		TRACE(_T("%s\n"), lpszErrorMessage);
 		// delete pException;
-		// pException = NULL;
+		// pException = nullptr;
 		return false;
 	}
 	return (nReturn == ACK);
@@ -139,32 +139,42 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
 
 void PushNotification(const int& nSocketIndex, const int nFileEvent, const std::wstring& strFilePath)
 {
-	WaitForSingleObject(g_hEmptySemaphore[nSocketIndex], INFINITE);
-	WaitForSingleObject(g_hResourceMutex[nSocketIndex], INFINITE);
+	if ((g_hResourceMutex[nSocketIndex] != nullptr) &&
+		(g_hEmptySemaphore[nSocketIndex] != nullptr) &&
+		(g_hOccupiedSemaphore[nSocketIndex] != nullptr))
+	{
+		WaitForSingleObject(g_hEmptySemaphore[nSocketIndex], INFINITE);
+		WaitForSingleObject(g_hResourceMutex[nSocketIndex], INFINITE);
 
-	TRACE(_T("[PushNotification] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
-	g_pResourceArray[nSocketIndex][g_nNextIn[nSocketIndex]].nFileEvent = nFileEvent;
-	g_pResourceArray[nSocketIndex][g_nNextIn[nSocketIndex]].strFilePath = strFilePath;
-	g_nNextIn[nSocketIndex]++;
-	g_nNextIn[nSocketIndex] %= NOTIFY_FILE_SIZE;
+		TRACE(_T("[PushNotification] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
+		g_pResourceArray[nSocketIndex][g_nNextIn[nSocketIndex]].nFileEvent = nFileEvent;
+		g_pResourceArray[nSocketIndex][g_nNextIn[nSocketIndex]].strFilePath = strFilePath;
+		g_nNextIn[nSocketIndex]++;
+		g_nNextIn[nSocketIndex] %= NOTIFY_FILE_SIZE;
 
-	ReleaseSemaphore(g_hResourceMutex[nSocketIndex], 1, NULL);
-	ReleaseSemaphore(g_hOccupiedSemaphore[nSocketIndex], 1, NULL);
+		ReleaseSemaphore(g_hResourceMutex[nSocketIndex], 1, nullptr);
+		ReleaseSemaphore(g_hOccupiedSemaphore[nSocketIndex], 1, nullptr);
+	}
 }
 
 void PopNotification(const int& nSocketIndex, int& nFileEvent, std::wstring& strFilePath)
 {
-	WaitForSingleObject(g_hOccupiedSemaphore[nSocketIndex], INFINITE);
-	WaitForSingleObject(g_hResourceMutex[nSocketIndex], INFINITE);
+	if ((g_hResourceMutex[nSocketIndex] != nullptr) &&
+		(g_hEmptySemaphore[nSocketIndex] != nullptr) &&
+		(g_hOccupiedSemaphore[nSocketIndex] != nullptr))
+	{
+		WaitForSingleObject(g_hOccupiedSemaphore[nSocketIndex], INFINITE);
+		WaitForSingleObject(g_hResourceMutex[nSocketIndex], INFINITE);
 
-	nFileEvent = g_pResourceArray[nSocketIndex][g_nNextOut[nSocketIndex]].nFileEvent;
-	strFilePath = g_pResourceArray[nSocketIndex][g_nNextOut[nSocketIndex]].strFilePath;
-	g_nNextOut[nSocketIndex]++;
-	g_nNextOut[nSocketIndex] %= NOTIFY_FILE_SIZE;
-	TRACE(_T("[PopNotification] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
+		nFileEvent = g_pResourceArray[nSocketIndex][g_nNextOut[nSocketIndex]].nFileEvent;
+		strFilePath = g_pResourceArray[nSocketIndex][g_nNextOut[nSocketIndex]].strFilePath;
+		g_nNextOut[nSocketIndex]++;
+		g_nNextOut[nSocketIndex] %= NOTIFY_FILE_SIZE;
+		TRACE(_T("[PopNotification] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
 
-	ReleaseSemaphore(g_hResourceMutex[nSocketIndex], 1, NULL);
-	ReleaseSemaphore(g_hEmptySemaphore[nSocketIndex], 1, NULL);
+		ReleaseSemaphore(g_hResourceMutex[nSocketIndex], 1, nullptr);
+		ReleaseSemaphore(g_hEmptySemaphore[nSocketIndex], 1, nullptr);
+	}
 }
 
 DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
@@ -180,9 +190,9 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 	ASSERT(pApplicationSocket.IsCreated());
 	std::wstring strComputerID;
 
-	g_hOccupiedSemaphore[*nSocketIndex] = CreateSemaphore(NULL, 0, NOTIFY_FILE_SIZE, NULL);
-	g_hEmptySemaphore[*nSocketIndex] = CreateSemaphore(NULL, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, NULL);
-	g_hResourceMutex[*nSocketIndex] = CreateSemaphore(NULL, 1, 1, NULL);
+	g_hOccupiedSemaphore[*nSocketIndex] = CreateSemaphore(nullptr, 0, NOTIFY_FILE_SIZE, nullptr);
+	g_hEmptySemaphore[*nSocketIndex] = CreateSemaphore(nullptr, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, nullptr);
+	g_hResourceMutex[*nSocketIndex] = CreateSemaphore(nullptr, 1, 1, nullptr);
 	g_nNextIn[*nSocketIndex] = g_nNextOut[*nSocketIndex] = 0;
 
 	while (bThreadRunning)
@@ -203,8 +213,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 						ZeroMemory(pBuffer, sizeof(pBuffer));
 						if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
 						{
-							const std::string strCommand = &pBuffer[3];
-							strComputerID = utf8_to_wstring(strCommand);
+							strComputerID = utf8_to_wstring(&pBuffer[3]);
 							TRACE(_T("Logged In: %s!\n"), strComputerID.c_str());
 						}
 					}
@@ -230,8 +239,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 									ZeroMemory(pBuffer, sizeof(pBuffer));
 									if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
 									{
-										const std::string strCommand = &pBuffer[3];
-										const std::wstring& strFilePath = utf8_to_wstring(strCommand);
+										const std::wstring& strFilePath = utf8_to_wstring(&pBuffer[3]);
 										TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
 									}
 								}
@@ -243,8 +251,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 										ZeroMemory(pBuffer, sizeof(pBuffer));
 										if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
 										{
-											const std::string strCommand = &pBuffer[3];
-											const std::wstring& strFilePath = utf8_to_wstring(strCommand);
+											const std::wstring& strFilePath = utf8_to_wstring(&pBuffer[3]);
 											TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
 										}
 									}
@@ -256,8 +263,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 											ZeroMemory(pBuffer, sizeof(pBuffer));
 											if (ReadBuffer(pApplicationSocket, pBuffer, nLength))
 											{
-												const std::string strCommand = &pBuffer[3];
-												const std::wstring& strFilePath = utf8_to_wstring(strCommand);
+												const std::wstring& strFilePath = utf8_to_wstring(&pBuffer[3]);
 												TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
 											}
 										}
@@ -278,28 +284,28 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
 			TRACE(_T("%s\n"), lpszErrorMessage);
 			// delete pException;
-			// pException = NULL;
+			// pException = nullptr;
 			TRACE(_T("exiting...\n"));
 			return 0;
 		}
 	}
 
-	if (g_hResourceMutex[*nSocketIndex] != NULL)
+	if (g_hResourceMutex[*nSocketIndex] != nullptr)
 	{
 		VERIFY(CloseHandle(g_hResourceMutex[*nSocketIndex]));
-		g_hResourceMutex[*nSocketIndex] = NULL;
+		g_hResourceMutex[*nSocketIndex] = nullptr;
 	}
 
-	if (g_hEmptySemaphore[*nSocketIndex] != NULL)
+	if (g_hEmptySemaphore[*nSocketIndex] != nullptr)
 	{
 		VERIFY(CloseHandle(g_hEmptySemaphore[*nSocketIndex]));
-		g_hEmptySemaphore[*nSocketIndex] = NULL;
+		g_hEmptySemaphore[*nSocketIndex] = nullptr;
 	}
 
-	if (g_hOccupiedSemaphore[*nSocketIndex] != NULL)
+	if (g_hOccupiedSemaphore[*nSocketIndex] != nullptr)
 	{
 		VERIFY(CloseHandle(g_hOccupiedSemaphore[*nSocketIndex]));
-		g_hOccupiedSemaphore[*nSocketIndex] = NULL;
+		g_hOccupiedSemaphore[*nSocketIndex] = nullptr;
 	}
 
 	TRACE(_T("exiting...\n"));
@@ -308,17 +314,18 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 
 DWORD WINAPI CreateDatabase(LPVOID lpParam)
 {
+	UNREFERENCED_PARAMETER(lpParam);
 	TRACE(_T("CreateDatabase()\n"));
 	g_pServerSocket.CreateAndBind(IntelliDiskPort, SOCK_STREAM, AF_INET);
-	if (bThreadRunning = g_pServerSocket.IsCreated())
+	if ((bThreadRunning = g_pServerSocket.IsCreated()) == true)
 	{
 		g_pServerSocket.Listen(MAX_SOCKET_CONNECTIONS);
 		while (bThreadRunning)
 		{
 			g_pServerSocket.Accept(g_pClientSocket[g_nSocketCount]);
 			const int nSocketIndex = g_nSocketCount;
-			g_hThreadArray[g_nThreadCount] = CreateThread(NULL, 0, IntelliDiskThread, (int*) &nSocketIndex, 0, &m_dwThreadID[g_nThreadCount]);
-			ASSERT(g_hThreadArray[g_nThreadCount] != NULL);
+			g_hThreadArray[g_nThreadCount] = CreateThread(nullptr, 0, IntelliDiskThread, (int*) &nSocketIndex, 0, &m_dwThreadID[g_nThreadCount]);
+			ASSERT(g_hThreadArray[g_nThreadCount] != nullptr);
 			g_nSocketCount++;
 			g_nThreadCount++;
 		}
@@ -329,8 +336,8 @@ DWORD WINAPI CreateDatabase(LPVOID lpParam)
 void StartProcessingThread()
 {
 	TRACE(_T("StartProcessingThread()\n"));
-	g_hThreadArray[g_nThreadCount] = CreateThread(NULL, 0, CreateDatabase, nullptr, 0, &m_dwThreadID[g_nThreadCount]);
-	ASSERT(g_hThreadArray[g_nThreadCount] != NULL);
+	g_hThreadArray[g_nThreadCount] = CreateThread(nullptr, 0, CreateDatabase, nullptr, 0, &m_dwThreadID[g_nThreadCount]);
+	ASSERT(g_hThreadArray[g_nThreadCount] != nullptr);
 	g_nThreadCount++;
 }
 

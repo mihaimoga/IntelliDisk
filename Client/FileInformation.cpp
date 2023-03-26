@@ -562,7 +562,7 @@ int CFileInformation::EnumDirFilesExt(CString root, CString ext, P_FI_List list)
 
 void CFileInformation::SortFiles(P_FI_List list)
 {
-	if (list == NULL || list->GetCount() == 0)
+	if (list == nullptr || list->GetCount() == 0)
 		return;
 
 	FI_List tempList;
@@ -573,9 +573,9 @@ void CFileInformation::SortFiles(P_FI_List list)
 	list->RemoveAll();
 
 	POSITION          listPos = tempList.GetHeadPosition();
-	CFileInformation* pFDI = NULL;
+	CFileInformation* pFDI = nullptr;
 
-	while (listPos != NULL)
+	while (listPos != nullptr)
 	{
 		pFDI = tempList.GetNext(listPos);
 		if (pFDI->IsDirectory())
@@ -588,11 +588,11 @@ void CFileInformation::SortFiles(P_FI_List list)
 	SortFilesABC(&fileList);
 
 	listPos = dirList.GetHeadPosition();
-	while (listPos != NULL)
+	while (listPos != nullptr)
 		list->AddTail(dirList.GetNext(listPos));
 
 	listPos = fileList.GetHeadPosition();
-	while (listPos != NULL)
+	while (listPos != nullptr)
 		list->AddTail(fileList.GetNext(listPos));
 
 	tempList.RemoveAll();
@@ -604,11 +604,11 @@ void CFileInformation::SortFiles(P_FI_List list)
 
 void CFileInformation::CopyFiles(const P_FI_List oldList, P_FI_List newList)
 {
-	if (oldList == NULL || newList == NULL || oldList->GetCount() == 0)
+	if (oldList == nullptr || newList == nullptr || oldList->GetCount() == 0)
 		return;
 
 	POSITION listPos = oldList->GetHeadPosition();
-	while (listPos != NULL)
+	while (listPos != nullptr)
 		newList->AddTail(oldList->GetNext(listPos));
 
 	return;
@@ -616,11 +616,11 @@ void CFileInformation::CopyFiles(const P_FI_List oldList, P_FI_List newList)
 
 void CFileInformation::CopyFilesAndFI(const P_FI_List oldList, P_FI_List newList)
 {
-	if (oldList == NULL || newList == NULL || oldList->GetCount() == 0)
+	if (oldList == nullptr || newList == nullptr || oldList->GetCount() == 0)
 		return;
 
 	POSITION listPos = oldList->GetHeadPosition();
-	while (listPos != NULL)
+	while (listPos != nullptr)
 		newList->AddTail(new CFileInformation(*oldList->GetNext(listPos)));
 
 	return;
@@ -628,13 +628,13 @@ void CFileInformation::CopyFilesAndFI(const P_FI_List oldList, P_FI_List newList
 
 void CFileInformation::SortFilesABC(P_FI_List list)
 {
-	if (list == NULL || list->GetCount() == 0)
+	if (list == nullptr || list->GetCount() == 0)
 		return;
 
 	CList< CFileInformation, CFileInformation> tempList;
 
 	POSITION listPos = list->GetHeadPosition();
-	while (listPos != NULL)
+	while (listPos != nullptr)
 	{
 		tempList.AddTail(list->GetAt(listPos));
 		list->GetNext(listPos);
@@ -667,24 +667,24 @@ void CFileInformation::SortFilesABC(P_FI_List list)
 	}
 
 	listPos = tempList.GetHeadPosition();
-	while (listPos != NULL)
+	while (listPos != nullptr)
 		list->AddTail(new CFileInformation(tempList.GetNext(listPos)));
 	tempList.RemoveAll();
 }
 
 BOOL CFileInformation::RemoveFiles(P_FI_List list)
 {
-	if (list == NULL || list->GetCount() == 0)
+	if (list == nullptr || list->GetCount() == 0)
 		return FALSE;
 
 	POSITION          listPos = list->GetHeadPosition();
-	CFileInformation* pFDI = NULL;
+	CFileInformation* pFDI = nullptr;
 
-	while (listPos != NULL)
+	while (listPos != nullptr)
 	{
 		pFDI = list->GetNext(listPos);
 
-		if (pFDI == NULL)
+		if (pFDI == nullptr)
 			throw "pFDI == NULL";
 
 		delete pFDI;
@@ -698,10 +698,10 @@ BOOL CFileInformation::RemoveFiles(P_FI_List list)
 EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList, CFileInformation& fi)
 {
 	EFileAction       faType = faNone;
-	POSITION          newListPos = NULL;
-	POSITION          oldListPos = NULL;
-	CFileInformation* newFI = NULL;
-	CFileInformation* oldFI = NULL;
+	POSITION          newListPos = nullptr;
+	POSITION          oldListPos = nullptr;
+	CFileInformation* newFI = nullptr;
+	CFileInformation* oldFI = nullptr;
 	int               nNew = (int)newList->GetCount();
 	int               nOld = (int)oldList->GetCount();
 
@@ -709,7 +709,7 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 	{
 		newListPos = newList->GetHeadPosition();
 		oldListPos = oldList->GetHeadPosition();
-		while (oldListPos != NULL && newListPos != NULL)
+		while (oldListPos != nullptr && newListPos != nullptr)
 		{
 			oldFI = oldList->GetNext(oldListPos);
 			newFI = newList->GetNext(newListPos);
@@ -727,14 +727,14 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 		BOOL isFind;
 
 		oldListPos = oldList->GetHeadPosition();
-		while (oldListPos != NULL)
+		while (oldListPos != nullptr)
 		{
 			oldFI = oldList->GetNext(oldListPos);
 
 			isFind = TRUE;
 
 			newListPos = newList->GetHeadPosition();
-			while (newListPos != NULL)
+			while (newListPos != nullptr)
 			{
 				newFI = newList->GetNext(newListPos);
 
@@ -758,14 +758,14 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 		BOOL isFind;
 
 		newListPos = newList->GetHeadPosition();
-		while (newListPos != NULL)
+		while (newListPos != nullptr)
 		{
 			newFI = newList->GetNext(newListPos);
 
 			isFind = TRUE;
 
 			oldListPos = oldList->GetHeadPosition();
-			while (oldListPos != NULL)
+			while (oldListPos != nullptr)
 			{
 				oldFI = oldList->GetNext(oldListPos);
 
@@ -792,11 +792,11 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 {
 	EFileAction faType = faNone;
 
-	POSITION newListPos = NULL;
-	POSITION oldListPos = NULL;
+	POSITION newListPos = nullptr;
+	POSITION oldListPos = nullptr;
 
-	CFileInformation *newFI = NULL;
-	CFileInformation *oldFI = NULL;
+	CFileInformation *newFI = nullptr;
+	CFileInformation *oldFI = nullptr;
 
 	int nNew = (int)newList->GetCount();
 	int nOld = (int)oldList->GetCount();
@@ -807,7 +807,7 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 	{
 		newListPos = newList->GetHeadPosition();
 		oldListPos = oldList->GetHeadPosition();
-		while (oldListPos != NULL && newListPos != NULL)
+		while (oldListPos != nullptr && newListPos != nullptr)
 		{
 			oldFI = oldList->GetNext(oldListPos);
 			newFI = newList->GetNext(newListPos);
@@ -824,14 +824,14 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 		BOOL isFind;
 
 		oldListPos = oldList->GetHeadPosition();
-		while (oldListPos != NULL)
+		while (oldListPos != nullptr)
 		{
 			oldFI = oldList->GetNext(oldListPos);
 
 			isFind = TRUE;
 
 			newListPos = newList->GetHeadPosition();
-			while (newListPos != NULL)
+			while (newListPos != nullptr)
 			{
 				newFI = newList->GetNext(newListPos);
 
@@ -854,14 +854,14 @@ EFileAction CFileInformation::CompareFiles(P_FI_List oldList, P_FI_List newList,
 		BOOL isFind;
 
 		newListPos = newList->GetHeadPosition();
-		while (newListPos != NULL)
+		while (newListPos != nullptr)
 		{
 			newFI = newList->GetNext(newListPos);
 
 			isFind = TRUE;
 
 			oldListPos = oldList->GetHeadPosition();
-			while (oldListPos != NULL)
+			while (oldListPos != nullptr)
 			{
 				oldFI = oldList->GetNext(oldListPos);
 
@@ -935,7 +935,7 @@ BOOL CFileInformation::FindFilePathOnDisk(CString& file)
 		// if logical drive exists
 		if (dwDriveMask & 0x01)
 		{
-			szDir[0] = TEXT('A') + i;
+			szDir[0] = TEXT('A' + (TCHAR)i);
 
 			if (GetDriveType(szDir) == DRIVE_FIXED && // if it is a fixed drive
 				FindFilePath(szDir, file))
@@ -960,7 +960,7 @@ BOOL CFileInformation::FindFilePathOnCD(CString& file)
 		// if logical drive exists
 		if (dwDriveMask & 0x01)
 		{
-			szDir[0] = TEXT('A') + i;
+			szDir[0] = TEXT('A' + (TCHAR)i);
 
 			if (GetDriveType(szDir) == DRIVE_CDROM && // if it is a cd drive
 				FindFilePath(szDir, file))
@@ -1213,7 +1213,7 @@ void CFileInformation::CreateDir(CString dir)
 	int pos = dir.ReverseFind(L'\\');
 	CreateDir(dir.Left(pos));
 
-	CreateDirectory(dir, NULL);
+	CreateDirectory(dir, nullptr);
 }
 
 BOOL CFileInformation::IsOk() const
@@ -1229,7 +1229,7 @@ BOOL CFileInformation::IsOk() const
 
 void CFileInformation::ParseDir(CString root, DirParsCallback action, LPVOID pData)
 {
-	if (root.IsEmpty() || action == NULL)
+	if (root.IsEmpty() || action == nullptr)
 		return;
 
 	CFileInformation* pFDI;
@@ -1287,7 +1287,7 @@ CString CFileInformation::GenerateNewFileName(CString path)
 	CString newPath = path;
 	FILE*   pFile = _tfopen(newPath, _T("r"));
 
-	while (pFile != NULL)
+	while (pFile != nullptr)
 	{
 		fclose(pFile);
 

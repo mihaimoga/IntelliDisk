@@ -248,6 +248,8 @@ void CServiceBase::Start(DWORD dwArgc, PWSTR *pszArgv)
 //
 void CServiceBase::OnStart(DWORD dwArgc, PWSTR *pszArgv)
 {
+	UNREFERENCED_PARAMETER(dwArgc);
+	UNREFERENCED_PARAMETER(pszArgv);
 	StartProcessingThread();
 }
 

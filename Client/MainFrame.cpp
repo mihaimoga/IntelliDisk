@@ -53,38 +53,38 @@ END_MESSAGE_MAP()
 CMainFrame::CMainFrame() noexcept
 {
 	m_hMainFrameIcon = CTrayNotifyIcon::LoadIcon(IDR_MAINFRAME);
-	m_MainButton = NULL;
-	m_hOccupiedSemaphore = CreateSemaphore(NULL, 0, NOTIFY_FILE_SIZE, NULL);
-	m_hEmptySemaphore = CreateSemaphore(NULL, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, NULL);
-	m_hResourceMutex = CreateSemaphore(NULL, 1, 1, NULL);
-	m_hSocketMutex = CreateSemaphore(NULL, 1, 1, NULL);
+	m_MainButton = nullptr;
+	m_hOccupiedSemaphore = CreateSemaphore(nullptr, 0, NOTIFY_FILE_SIZE, nullptr);
+	m_hEmptySemaphore = CreateSemaphore(nullptr, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, nullptr);
+	m_hResourceMutex = CreateSemaphore(nullptr, 1, 1, nullptr);
+	m_hSocketMutex = CreateSemaphore(nullptr, 1, 1, nullptr);
 	m_nNextIn = m_nNextOut = 0;
 }
 
 CMainFrame::~CMainFrame()
 {
-	if (m_hSocketMutex != NULL)
+	if (m_hSocketMutex != nullptr)
 	{
 		VERIFY(CloseHandle(m_hSocketMutex));
-		m_hSocketMutex = NULL;
+		m_hSocketMutex = nullptr;
 	}
 
-	if (m_hResourceMutex != NULL)
+	if (m_hResourceMutex != nullptr)
 	{
 		VERIFY(CloseHandle(m_hResourceMutex));
-		m_hResourceMutex = NULL;
+		m_hResourceMutex = nullptr;
 	}
 
-	if (m_hEmptySemaphore != NULL)
+	if (m_hEmptySemaphore != nullptr)
 	{
 		VERIFY(CloseHandle(m_hEmptySemaphore));
-		m_hEmptySemaphore = NULL;
+		m_hEmptySemaphore = nullptr;
 	}
 
-	if (m_hOccupiedSemaphore != NULL)
+	if (m_hOccupiedSemaphore != nullptr)
 	{
 		VERIFY(CloseHandle(m_hOccupiedSemaphore));
-		m_hOccupiedSemaphore = NULL;
+		m_hOccupiedSemaphore = nullptr;
 	}
 }
 
@@ -143,7 +143,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 			&pshFileInfo,
 			sizeof(pshFileInfo),
 			SHGFI_ICON | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
-	if (hSystemImageList != NULL)
+	if (hSystemImageList != nullptr)
 	{
 		VERIFY(m_pImageList.Attach(hSystemImageList));
 		m_wndView.GetListCtrl().SetImageList(&m_pImageList, LVSIL_SMALL);
@@ -162,10 +162,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_strServerIP = theApp.GetString(_T("ServerIP"), IntelliDiskIP);
 	m_nServerPort = theApp.GetInt(_T("ServerPort"), IntelliDiskPort);
 
-	m_hProducerThread = CreateThread(NULL, 0, ProducerThread, this, 0, &m_dwThreadID[0]);
-	ASSERT(m_hProducerThread != NULL);
-	m_hConsumerThread = CreateThread(NULL, 0, ConsumerThread, this, 0, &m_dwThreadID[1]);
-	ASSERT(m_hConsumerThread != NULL);
+	m_hProducerThread = CreateThread(nullptr, 0, ProducerThread, this, 0, &m_dwThreadID[0]);
+	ASSERT(m_hProducerThread != nullptr);
+	m_hConsumerThread = CreateThread(nullptr, 0, ConsumerThread, this, 0, &m_dwThreadID[1]);
+	ASSERT(m_hConsumerThread != nullptr);
 
 	return 0;
 }
@@ -181,16 +181,16 @@ void CMainFrame::OnDestroy()
 	hThreadArray[1] = m_hConsumerThread;
 	WaitForMultipleObjects(2, hThreadArray, TRUE, INFINITE);
 
-	if (m_hProducerThread != NULL)
+	if (m_hProducerThread != nullptr)
 	{
 		VERIFY(CloseHandle(m_hProducerThread));
-		m_hProducerThread = NULL;
+		m_hProducerThread = nullptr;
 	}
 
-	if (m_hConsumerThread != NULL)
+	if (m_hConsumerThread != nullptr)
 	{
 		VERIFY(CloseHandle(m_hConsumerThread));
-		m_hConsumerThread = NULL;
+		m_hConsumerThread = nullptr;
 	}
 
 	CFrameWndEx::OnDestroy();
@@ -294,7 +294,7 @@ void CMainFrame::OnSettings()
 
 void CMainFrame::OnOpenFolder()
 {
-	ShellExecute(NULL, _T("open"), GetSpecialFolder().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+	ShellExecute(nullptr, _T("open"), GetSpecialFolder().c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
 }
 
 void CMainFrame::OnViewOnline()

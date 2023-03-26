@@ -26,7 +26,7 @@ class CNotifyDirCheck : public CObject
 {
 public:
 	CNotifyDirCheck();
-	CNotifyDirCheck(CString csDir, NOTIFICATION_CALLBACK_PTR ncpAction, LPVOID lpData = NULL);
+	CNotifyDirCheck(CString csDir, NOTIFICATION_CALLBACK_PTR ncpAction, LPVOID lpData = nullptr);
 	virtual ~CNotifyDirCheck();
 
 	const NOTIFICATION_CALLBACK_PTR GetActionCallback() const { return m_ncpAction; }
