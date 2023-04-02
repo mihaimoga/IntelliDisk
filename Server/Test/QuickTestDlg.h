@@ -44,4 +44,7 @@ protected:
 	afx_msg void OnDestroy();
 
 	DECLARE_MESSAGE_MAP()
+public:
+	CProgressCtrl m_ctrlProgress;
+	afx_msg void OnBnClickedSettings();
 };

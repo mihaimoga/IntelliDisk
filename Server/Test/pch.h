@@ -24,3 +24,4 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "framework.h"
 
 #endif //PCH_H
+#include <afxcontrolbars.h>

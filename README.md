@@ -1,3 +1,5 @@
+![IntelliDisk.png](IntelliDisk.png)
+
 [IntelliDisk](https://www.emvs.site/intellidisk/) is an alternative Windows version to the famous Microsoft OneDrive!
 
 This application is developed in Microsoft Visual C++, and it is licensed under GNU General Public License v3.0.
@@ -25,3 +27,27 @@ Some of the typical features of client-server applications are as follows:
 - The client program doesn’t have to be aware of the number of subprograms that provide a service;
 - Multiple subprograms have the ability to work together to provide a service;
 - The server programs run on a machine that is remote from the machine that runs the client program.
+
+# Setup of this application
+
+- Install  [MySQL ODBC connector](https://dev.mysql.com/downloads/connector/odbc/);
+- Choose a MySQL hosting service and create the MySQL database;
+- Configure Server instance (create `IntelliDisk.xml` configuration file):
+![IntelliDisk-MySQL.png](IntelliDisk-MySQL.png)
+```xml
+<?xml version="1.0" encoding="UTF-16" standalone="no"?>
+<xml>
+    <IntelliDisk>
+        <ServicePort>8080</ServicePort>
+        <HostName>localhost</HostName>
+        <HostPort>3306</HostPort>
+        <Database>MySQL_database</Database>
+        <Username>MySQL_username</Username>
+        <Password>MySQL_password</Password>
+    </IntelliDisk>
+</xml>
+```
+- Configure Client instance (change Servers's IP & Port):
+![IntelliDisk-Settings.png](IntelliDisk-Settings.png)
+
+_Note: you should check the option "Start IntelliDisk automatically when I sign in to Windows"._

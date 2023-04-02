@@ -113,4 +113,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #define STX 0x02
 #define ETX 0x03
+#define EOT 0x04
+#define ENQ 0x05
 #define ACK 0x06
+#define NAK 0x15

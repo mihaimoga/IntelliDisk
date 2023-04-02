@@ -15,17 +15,18 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "FileInformation.h"
 #include "NotifyDirCheck.h"
+#include "SocMFC.h"
 
-inline byte calcLRC(byte* buffer, const int length)
+inline unsigned char calcLRC(const unsigned char* buffer, const int length)
 {
-	byte nLRC = 0;
+	unsigned char nLRC = 0;
 	for (int i = 0; i < length; nLRC = nLRC ^ buffer[i], i++);
 	return nLRC;
 }
 
-inline byte calcLRC(const std::vector<byte>& buffer)
+inline unsigned char calcLRC(const std::vector<unsigned char>& buffer)
 {
-	byte nLRC = 0;
+	unsigned char nLRC = 0;
 	for (auto i = buffer.begin(); i != buffer.end(); ++i)
 		nLRC = nLRC ^ *i;
 	return nLRC;
@@ -38,6 +39,9 @@ const std::string GetMachineID();
 const std::wstring GetSpecialFolder();
 
 bool InstallStartupApps(bool bInstallStartupApps);
+
+bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT);
+bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT);
 
 UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData);
 DWORD WINAPI ProducerThread(LPVOID lpParam);

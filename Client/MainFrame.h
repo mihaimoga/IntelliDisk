@@ -22,7 +22,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "SocMFC.h"
 
 constexpr auto BSIZE = 0x10000; // this is only for testing, not for the final commercial application
-constexpr auto NOTIFY_FILE_SIZE = 0x100; // this is only for testing, not for the final commercial application
+constexpr auto NOTIFY_FILE_SIZE = 0x10000; // this is only for testing, not for the final commercial application
 
 typedef struct {
 	int nFileEvent;

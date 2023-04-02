@@ -54,6 +54,9 @@
     <ClInclude Include="..\IntelliDiskExt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SettingsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QuickTest.cpp">
@@ -80,6 +83,9 @@
     <ClCompile Include="..\IntelliDiskExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SettingsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QuickTest.rc">
@@ -93,6 +99,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\QuickTest.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MySQL-logo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

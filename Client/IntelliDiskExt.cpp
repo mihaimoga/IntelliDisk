@@ -41,7 +41,7 @@ std::string wstring_to_utf8(const std::wstring& str)
 
 const std::string GetMachineID()
 {
-	/*	LINUX:
+	/* LINUX:
 	#include <unistd.h>
 	#include <limits.h>
 
@@ -51,44 +51,44 @@ const std::string GetMachineID()
 	getlogin_r(username, LOGIN_NAME_MAX);
 	*/
 
-DWORD nLength = 0x1000;
-TCHAR lpszUserName[0x1000] = { 0, };
-if (GetUserNameEx(NameUserPrincipal, lpszUserName, &nLength))
-{
-	lpszUserName[nLength] = 0;
-	TRACE(_T("UserName = %s\n"), lpszUserName);
-}
-else
-{
-	nLength = 0x1000;
-	if (GetUserName(lpszUserName, &nLength) != 0)
+	DWORD nLength = 0x1000;
+	TCHAR lpszUserName[0x1000] = { 0, };
+	if (GetUserNameEx(NameUserPrincipal, lpszUserName, &nLength))
 	{
 		lpszUserName[nLength] = 0;
 		TRACE(_T("UserName = %s\n"), lpszUserName);
 	}
-}
+	else
+	{
+		nLength = 0x1000;
+		if (GetUserName(lpszUserName, &nLength) != 0)
+		{
+			lpszUserName[nLength] = 0;
+			TRACE(_T("UserName = %s\n"), lpszUserName);
+		}
+	}
 
-nLength = 0x1000;
-TCHAR lpszComputerName[0x1000] = { 0, };
-if (GetComputerNameEx(ComputerNamePhysicalDnsFullyQualified, lpszComputerName, &nLength))
-{
-	lpszComputerName[nLength] = 0;
-	TRACE(_T("ComputerName = %s\n"), lpszComputerName);
-}
-else
-{
 	nLength = 0x1000;
-	if (GetComputerName(lpszComputerName, &nLength) != 0)
+	TCHAR lpszComputerName[0x1000] = { 0, };
+	if (GetComputerNameEx(ComputerNamePhysicalDnsFullyQualified, lpszComputerName, &nLength))
 	{
 		lpszComputerName[nLength] = 0;
 		TRACE(_T("ComputerName = %s\n"), lpszComputerName);
 	}
-}
+	else
+	{
+		nLength = 0x1000;
+		if (GetComputerName(lpszComputerName, &nLength) != 0)
+		{
+			lpszComputerName[nLength] = 0;
+			TRACE(_T("ComputerName = %s\n"), lpszComputerName);
+		}
+	}
 
-std::wstring result(lpszUserName);
-result += _T(":");
-result += lpszComputerName;
-return wstring_to_utf8(result);
+	std::wstring result(lpszUserName);
+	result += _T(":");
+	result += lpszComputerName;
+	return wstring_to_utf8(result);
 }
 
 const std::wstring GetSpecialFolder()
@@ -147,47 +147,134 @@ UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 }
 
 const int MAX_BUFFER = 0x10000;
+int g_nPingCount = 0;
+bool g_bThreadRunning = true;
+bool g_bIsConnected = false;
 
-bool WriteBuffer(CWSocket& pApplicationSocket, const char* pBuffer, int nLength)
+bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT)
 {
+	int nIndex = 0;
 	int nCount = 0;
 	char nReturn = ACK;
-	char pPacket[MAX_BUFFER] = { 0, };
+
+	try
+	{
+		if (ReceiveENQ)
+		{
+			nLength = MAX_BUFFER;
+			if (pApplicationSocket.IsReadible(1000) &&
+				((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
+				(ENQ == pBuffer[nLength - 1]))
+			{
+				TRACE(_T("ENQ Received\n"));
+				unsigned char chACK = ACK;
+				VERIFY(pApplicationSocket.Send(&chACK, sizeof(chACK)) == 1);
+				TRACE(_T("ACK Sent\n"));
+			}
+			else
+				return false;
+		}
+		nLength = 0;
+		do {
+			while (pApplicationSocket.IsReadible(1000) &&
+				((nIndex = pApplicationSocket.Receive(pBuffer + nIndex, MAX_BUFFER - nLength)) > 0))
+			{
+				nLength += nIndex;
+				TRACE(_T("Buffer Received\n"));
+				nReturn = (pBuffer[nLength - 1] == calcLRC(&pBuffer[3], (nLength - 5))) ? ACK : NAK;
+			}
+			TRACE(_T("%s Sent\n"), ((ACK == nReturn) ? _T("ACK") : _T("NAK")));
+			VERIFY(pApplicationSocket.Send(&nReturn, sizeof(nReturn)) == 1);
+		} while ((ACK != nReturn) && (++nCount < 3));
+		if (ReceiveEOT)
+		{
+			nLength = MAX_BUFFER;
+			if (pApplicationSocket.IsReadible(1000) &&
+				((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
+				(EOT == pBuffer[nLength - 1]))
+			{
+				TRACE(_T("EOT Received\n"));
+			}
+			else
+				return false;
+		}
+	}
+	catch (CWSocketException* pException)
+	{
+		const int nErrorLength = 0x100;
+		TCHAR lpszErrorMessage[nErrorLength] = { 0, };
+		pException->GetErrorMessage(lpszErrorMessage, nErrorLength);
+		TRACE(_T("%s\n"), lpszErrorMessage);
+		pException->Delete();
+		pApplicationSocket.Close();
+		g_bIsConnected = false;
+		return false;
+	}
+	return (ACK == nReturn);
+}
+
+bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT)
+{
+	int nCount = 0;
+	unsigned char nReturn = ACK;
+	unsigned char pPacket[MAX_BUFFER] = { 0, };
 
 	try
 	{
 		ASSERT(nLength < sizeof(pPacket));
+		if (SendENQ && pApplicationSocket.IsWritable(1000))
+		{
+			unsigned char chENQ = ENQ;
+			TRACE(_T("ENQ Sent\n"));
+			VERIFY(pApplicationSocket.Send(&chENQ, sizeof(chENQ)) == 1);
+			ZeroMemory(pPacket, sizeof(pPacket));
+			nCount = MAX_BUFFER;
+			if (((nCount = pApplicationSocket.Receive(pPacket, nCount)) > 0) &&
+				(ACK == pPacket[nCount - 1]))
+			{
+				TRACE(_T("ACK Received\n"));
+				nCount = 0;
+			}
+			else
+				return false;
+		}
 		ZeroMemory(pPacket, sizeof(pPacket));
 		CopyMemory(&pPacket[3], pBuffer, nLength);
 		pPacket[0] = STX;
 		pPacket[1] = (char)(nLength / 0x100);
-		pPacket[2] = (char)(nLength % 0x100);
+		pPacket[2] = nLength % 0x100;
 		pPacket[3 + nLength] = ETX;
-		pPacket[4 + nLength] = calcLRC((byte*) pBuffer, nLength);
+		pPacket[4 + nLength] = calcLRC(pBuffer, nLength);
 		do {
 			if (pApplicationSocket.Send(pPacket, (5 + nLength)) == (5 + nLength))
 			{
 				VERIFY(pApplicationSocket.Receive(&nReturn, sizeof(nReturn)) == 1);
 			}
 		} while ((nReturn != ACK) && (++nCount <= 3));
+		if (SendEOT && pApplicationSocket.IsWritable(1000))
+		{
+			unsigned char chEOT = EOT;
+			TRACE(_T("EOT Sent\n"));
+			VERIFY(pApplicationSocket.Send(&chEOT, sizeof(chEOT)) == 1);
+		}
 	}
 	catch (CWSocketException* pException)
 	{
-		TCHAR lpszErrorMessage[0x100] = { 0, };
-		pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+		const int nErrorLength = 0x100;
+		TCHAR lpszErrorMessage[nErrorLength] = { 0, };
+		pException->GetErrorMessage(lpszErrorMessage, nErrorLength);
 		TRACE(_T("%s\n"), lpszErrorMessage);
-		// delete pException;
-		// pException = nullptr;
+		pException->Delete();
+		pApplicationSocket.Close();
+		g_bIsConnected = false;
 		return false;
 	}
 	return (nReturn == ACK);
 }
 
-int g_nPingCount = 0;
-bool g_bThreadRunning = true;
-bool g_bIsConnected = false;
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
+	unsigned char pBuffer[MAX_BUFFER] = { 0, };
 	int nLength = 0;
 
 	CMainFrame* pMainFrame = (CMainFrame*)lpParam;
@@ -205,12 +292,12 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 				pApplicationSocket.CreateAndConnect(pMainFrame->m_strServerIP, pMainFrame->m_nServerPort);
 				const std::string strCommand = "IntelliDisk";
 				nLength = (int)strCommand.length() + 1;
-				if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
+				if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 				{
 					TRACE(_T("Client connected!\n"));
 					const std::string strMachineID = GetMachineID();
 					int nComputerLength = (int)strMachineID.length() + 1;
-					if (WriteBuffer(pApplicationSocket, strMachineID.c_str(), nComputerLength))
+					if (WriteBuffer(pApplicationSocket, (unsigned char*) strMachineID.c_str(), nComputerLength, false, true))
 					{
 						TRACE(_T("Logged In!\n"));
 						g_bIsConnected = true;
@@ -223,6 +310,25 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 				if (pApplicationSocket.IsReadible(1000))
 				{
 					g_nPingCount = 0;
+					nLength = sizeof(pBuffer);
+					ZeroMemory(pBuffer, sizeof(pBuffer));
+					if (ReadBuffer(pApplicationSocket, pBuffer, nLength, true, false))
+					{
+						const std::string strCommand = (char*)&pBuffer[3];
+						if (strCommand.compare("Restart") == 0)
+						{
+							nLength = sizeof(pBuffer);
+							ZeroMemory(pBuffer, sizeof(pBuffer));
+							if (((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
+								(EOT == pBuffer[nLength - 1]))
+							{
+								TRACE(_T("EOT Received\n"));
+							}
+							TRACE(_T("Restart!\n"));
+							pApplicationSocket.Close();
+							g_bIsConnected = false;
+						}
+					}
 				}
 				else
 				{
@@ -231,7 +337,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 						g_nPingCount = 0;
 						const std::string strCommand = "Ping";
 						nLength = (int)strCommand.length() + 1;
-						if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
+						if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, true))
 						{
 							TRACE(_T("Ping!\n"));
 						}
@@ -243,14 +349,15 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 		}
 		catch (CWSocketException* pException)
 		{
-			TCHAR lpszErrorMessage[0x100] = { 0, };
-			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+			const int nErrorLength = 0x100;
+			TCHAR lpszErrorMessage[nErrorLength] = { 0, };
+			pException->GetErrorMessage(lpszErrorMessage, nErrorLength);
 			TRACE(_T("%s\n"), lpszErrorMessage);
-			// delete pException;
-			// pException = nullptr;
-			g_bIsConnected = false;
+			pException->Delete();
 			ReleaseSemaphore(hSocketMutex, 1, nullptr);
-			Sleep(60000);
+			pApplicationSocket.Close();
+			g_bIsConnected = false;
+			Sleep(1000);
 			continue;
 		}
 	}
@@ -258,7 +365,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 	return 0;
 }
 
-std::wstring g_strCurrentDocument;
+std::vector<std::wstring> g_strCurrentDocument;
 DWORD WINAPI ConsumerThread(LPVOID lpParam)
 {
 	int nLength = 0;
@@ -273,8 +380,6 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 
 	while (g_bThreadRunning)
 	{
-		bool bSuccessfulOperation = true;
-
 		WaitForSingleObject(hOccupiedSemaphore, INFINITE);
 		WaitForSingleObject(hResourceMutex, INFINITE);
 
@@ -296,7 +401,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
 			strMessage.ReleaseBuffer();
 
-			g_strCurrentDocument = strFilePath; // BUGFIX
+			g_strCurrentDocument.push_back(strFilePath); // BUGFIX
 		}
 		else if (ID_FILE_UPLOAD == nFileEvent)
 		{
@@ -311,6 +416,8 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 			strMessage.Format(_T("Deleting %s..."), strFilePath.c_str());
 			pMainFrame->ShowMessage(strMessage.GetBuffer(), strFilePath);
 			strMessage.ReleaseBuffer();
+
+			g_strCurrentDocument.push_back(strFilePath); // BUGFIX
 		}
 
 		ReleaseSemaphore(hResourceMutex, 1, nullptr);
@@ -328,7 +435,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 				{
 					const std::string strCommand = "Close";
 					nLength = (int)strCommand.length() + 1;
-					if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
+					if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, true))
 					{
 						TRACE("Closing...\n");
 						pApplicationSocket.Close();
@@ -340,11 +447,11 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 					{
 						const std::string strCommand = "Download";
 						nLength = (int)strCommand.length() + 1;
-						if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
+						if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 						{
 							const std::string strASCII = wstring_to_utf8(strFilePath);
 							const int nFileNameLength = (int)strASCII.length() + 1;
-							if (WriteBuffer(pApplicationSocket, strASCII.c_str(), nFileNameLength))
+							if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
 							{
 								TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
 							}
@@ -356,11 +463,11 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 						{
 							const std::string strCommand = "Upload";
 							nLength = (int)strCommand.length() + 1;
-							if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
+							if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 							{
 								const std::string strASCII = wstring_to_utf8(strFilePath);
 								const int nFileNameLength = (int)strASCII.length() + 1;
-								if (WriteBuffer(pApplicationSocket, strASCII.c_str(), nFileNameLength))
+								if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
 								{
 									TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
 								}
@@ -372,11 +479,11 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 							{
 								const std::string strCommand = "Delete";
 								nLength = (int)strCommand.length() + 1;
-								if (WriteBuffer(pApplicationSocket, strCommand.c_str(), nLength))
+								if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 								{
 									const std::string strASCII = wstring_to_utf8(strFilePath);
 									const int nFileNameLength = (int)strASCII.length() + 1;
-									if (WriteBuffer(pApplicationSocket, strASCII.c_str(), nFileNameLength))
+									if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
 									{
 										TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
 									}
@@ -389,12 +496,12 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 		}
 		catch (CWSocketException* pException)
 		{
-			TCHAR lpszErrorMessage[0x100] = { 0, };
-			pException->GetErrorMessage(lpszErrorMessage, sizeof(lpszErrorMessage));
+			const int nErrorLength = 0x100;
+			TCHAR lpszErrorMessage[nErrorLength] = { 0, };
+			pException->GetErrorMessage(lpszErrorMessage, nErrorLength);
 			TRACE(_T("%s\n"), lpszErrorMessage);
-			// delete pException;
-			// pException = nullptr;
-			bSuccessfulOperation = false;
+			pException->Delete();
+			g_bIsConnected = false;
 		}
 
 		ReleaseSemaphore(hSocketMutex, 1, nullptr);
@@ -409,10 +516,11 @@ void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lp
 	HANDLE& hEmptySemaphore = pMainFrame->m_hEmptySemaphore;
 	HANDLE& hResourceMutex = pMainFrame->m_hResourceMutex;
 
-	if ((g_strCurrentDocument.compare(strFilePath) == 0) &&
-		(ID_FILE_UPLOAD == nFileEvent)) // BUGFIX
+	auto pFileFound = std::find(g_strCurrentDocument.begin(), g_strCurrentDocument.end(), strFilePath);
+	if ((g_strCurrentDocument.end() != pFileFound) &&
+		((ID_FILE_UPLOAD == nFileEvent) || (ID_FILE_DELETE == nFileEvent)))
 	{
-		g_strCurrentDocument = _T("");
+		g_strCurrentDocument.erase(pFileFound);
 		return;
 	}
 

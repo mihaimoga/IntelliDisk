@@ -411,7 +411,7 @@ public:
 		m_bWriteFlush = bWriteFlush;
 	}
 
-	[[nodiscard]] bool GetWriteFlush() const noexcept
+	bool GetWriteFlush() const noexcept
 	{
 		return m_bWriteFlush;
 	}
@@ -480,7 +480,7 @@ public:
 		String strValue;
 		strValue.resize(nAllocatedSizeChars);
 #pragma warning(suppress: 26429 26446)
-		LPTSTR pszStrValue{ strValue.data() };
+		LPTSTR pszStrValue{ (LPTSTR)(strValue.data()) };
 #pragma warning(suppress: 26490)
 		lResult = RegQueryValueEx(hSecKey, lpszEntry, nullptr, &dwType, reinterpret_cast<LPBYTE>(pszStrValue), &dwCount);
 		RegCloseKey(hSecKey);
@@ -1094,7 +1094,7 @@ public:
 		m_sProductName = sProductName;
 	}
 
-	[[nodiscard]] String GetProductName() const
+	String GetProductName() const
 	{
 		return m_sProductName;
 	}
@@ -1104,7 +1104,7 @@ public:
 		m_sCompanyName = sCompanyName;
 	}
 
-	[[nodiscard]] String GetCompanyName() const
+	String GetCompanyName() const
 	{
 		return m_sCompanyName;
 	}
@@ -1114,7 +1114,7 @@ public:
 		m_sProductVersion = sProductVersion;
 	}
 
-	[[nodiscard]] String GetProductVersion() const
+	String GetProductVersion() const
 	{
 		return m_sProductVersion;
 	}
@@ -1241,7 +1241,7 @@ public:
 		m_sServiceName = sServiceName;
 	}
 
-	[[nodiscard]] String GetServiceName() const
+	String GetServiceName() const
 	{
 		return m_sServiceName;
 	}
@@ -1304,7 +1304,7 @@ public:
 		m_sIniFile = sIniFile;
 	}
 
-	[[nodiscard]] String GetIniFile() const
+	String GetIniFile() const
 	{
 		return m_sIniFile;
 	}
@@ -1764,7 +1764,7 @@ public:
 		m_sXMLFile = sXMLFile;
 	}
 
-	[[nodiscard]] String GetXMLFile() const
+	String GetXMLFile() const
 	{
 		return m_sXMLFile;
 	}
@@ -1774,7 +1774,7 @@ public:
 		m_bWriteFlush = bWriteFlush;
 	}
 
-	[[nodiscard]] bool GetWriteFlush() const noexcept
+	bool GetWriteFlush() const noexcept
 	{
 		return m_bWriteFlush;
 	}

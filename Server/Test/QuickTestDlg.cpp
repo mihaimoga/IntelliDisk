@@ -18,6 +18,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "framework.h"
 #include "QuickTest.h"
 #include "QuickTestDlg.h"
+#include "SettingsDlg.h"
 
 #include "VersionInfo.h"
 #include "HyperlinkStatic.h"
@@ -139,6 +140,7 @@ CQuickTestDlg::CQuickTestDlg(CWnd* pParent /*=nullptr*/)
 void CQuickTestDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PROGRESS, m_ctrlProgress);
 }
 
 BEGIN_MESSAGE_MAP(CQuickTestDlg, CDialogEx)
@@ -146,6 +148,7 @@ BEGIN_MESSAGE_MAP(CQuickTestDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_SETTINGS, &CQuickTestDlg::OnBnClickedSettings)
 END_MESSAGE_MAP()
 
 // CQuickTestDlg message handlers
@@ -181,6 +184,7 @@ BOOL CQuickTestDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	StartProcessingThread();
+	m_ctrlProgress.SetMarquee(TRUE, 30);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -239,4 +243,17 @@ void CQuickTestDlg::OnDestroy()
 	StopProcessingThread();
 
 	CDialog::OnDestroy();
+}
+
+void CQuickTestDlg::OnBnClickedSettings()
+{
+	CSettingsDlg dlgSettings(this);
+	if (dlgSettings.DoModal() == IDOK)
+	{
+		m_ctrlProgress.SetMarquee(FALSE, 30);
+		StopProcessingThread();
+		Sleep(1000);
+		StartProcessingThread();
+		m_ctrlProgress.SetMarquee(TRUE, 30);
+	}
 }
