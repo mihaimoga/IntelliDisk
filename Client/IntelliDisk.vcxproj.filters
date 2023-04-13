@@ -167,5 +167,6 @@
     <None Include="res\IntelliDisk.rc2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\LICENSE" />
   </ItemGroup>
 </Project>

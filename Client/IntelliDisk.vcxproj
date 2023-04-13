@@ -246,6 +246,7 @@
     <Image Include="res\writesmall.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\LICENSE" />
     <None Include="res\IntelliDisk.rc2" />
     <None Include="res\ribbon.mfcribbon-ms" />
   </ItemGroup>
