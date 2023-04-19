@@ -19,6 +19,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "SettingsDlg.h"
 #include "afxdialogex.h"
 #include "../IntelliDiskExt.h"
+#include "../ODBCWrappers.h"
 #include <string>
 
 // CSettingsDlg dialog
@@ -75,6 +76,41 @@ BOOL CSettingsDlg::OnInitDialog()
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+//Another flavour of an ODBC_CHECK_RETURN macro
+#define ODBC_CHECK_RETURN_FALSE(nRet, handle) \
+	handle.ValidateReturnValue(nRet); \
+	if (!SQL_SUCCEEDED(nRet)) \
+	{ \
+		return false; \
+	}
+
+bool CheckIfDatabaseConnected(const std::wstring& strHostName, const std::wstring& strHostPort, const std::wstring& strDatabase, const std::wstring& strUsername, const std::wstring& strPassword)
+{
+	CODBC::CEnvironment pEnvironment;
+	CODBC::CConnection pConnection;
+	CODBC::String sConnectionOutString;
+	TCHAR sConnectionInString[0x100];
+
+	SQLRETURN nRet = pEnvironment.Create();
+	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
+
+	nRet = pEnvironment.SetAttr(SQL_ATTR_ODBC_VERSION, SQL_OV_ODBC3_80);
+	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
+
+	nRet = pEnvironment.SetAttrU(SQL_ATTR_CONNECTION_POOLING, SQL_CP_DEFAULT);
+	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
+
+	nRet = pConnection.Create(pEnvironment);
+	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
+
+	_stprintf(sConnectionInString, _T("Driver={MySQL ODBC 8.0 Unicode Driver};Server=%s;Port=%s;Database=%s;User=%s;Password=%s;"),
+		strHostName.c_str(), strHostPort.c_str(), strDatabase.c_str(), strUsername.c_str(), strPassword.c_str());
+	nRet = pConnection.DriverConnect(const_cast<SQLTCHAR*>(reinterpret_cast<const SQLTCHAR*>(sConnectionInString)), sConnectionOutString);
+	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
+
+	return true;
+}
+
 void CSettingsDlg::OnOK()
 {
 	// TODO: Add your specialized code here and/or call the base class
@@ -93,8 +129,17 @@ void CSettingsDlg::OnOK()
 	m_ctrlUsername.GetWindowText(lpszUsername, nMaxLength);
 	m_ctrlPassword.GetWindowText(lpszPassword, nMaxLength);
 
-	VERIFY(SaveServicePort(std::stoi(lpszServicePort)));
-	VERIFY(SaveAppSettings(lpszHostName, std::stoi(lpszHostPort), lpszDatabase, lpszUsername, lpszPassword));
+	if (CheckIfDatabaseConnected(lpszHostName, lpszHostPort, lpszDatabase, lpszUsername, lpszPassword))
+	{
+		VERIFY(SaveServicePort(std::stoi(lpszServicePort)));
+		VERIFY(SaveAppSettings(lpszHostName, std::stoi(lpszHostPort), lpszDatabase, lpszUsername, lpszPassword));
 
-	CDialogEx::OnOK();
+		MessageBox(_T("Database connection was successful! Everything is OK now..."), _T("MySQL ODBC Connection"), MB_OK);
+
+		CDialogEx::OnOK();
+	}
+	else
+	{
+		CDialogEx::OnCancel();
+	}
 }

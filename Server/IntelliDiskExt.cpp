@@ -646,6 +646,15 @@ const std::wstring GetAppSettingsFilePath()
 	TCHAR lpszExtension[_MAX_EXT];
 	TCHAR lpszFullPath[_MAX_PATH];
 
+	WCHAR* lpszSpecialFolderPath = nullptr;
+	if ((SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &lpszSpecialFolderPath)) == S_OK)
+	{
+		std::wstring result(lpszSpecialFolderPath);
+		CoTaskMemFree(lpszSpecialFolderPath);
+		result += _T("\\IntelliDisk.xml");
+		return result;
+	}
+
 	VERIFY(0 != GetModuleFileName(NULL, lpszModuleFilePath, _MAX_PATH));
 	VERIFY(0 == _tsplitpath_s(AfxGetApp()->m_pszHelpFilePath, lpszDrive, _MAX_DRIVE, lpszDirectory, _MAX_DIR, lpszFilename, _MAX_FNAME, lpszExtension, _MAX_EXT));
 	VERIFY(0 == _tmakepath_s(lpszFullPath, _MAX_PATH, lpszDrive, lpszDirectory, _T("IntelliDisk"), _T(".xml")));
@@ -699,7 +708,7 @@ bool LoadAppSettings(std::wstring& strHostName, int& nHostPort, std::wstring& st
 	TRACE(_T("LoadAppSettings\n"));
 	try {
 		CXMLAppSettings pAppSettings(GetAppSettingsFilePath(), true, true);
-		strHostName = pAppSettings.GetString(IntelliDiskSection, _T("Hostname"));
+		strHostName = pAppSettings.GetString(IntelliDiskSection, _T("HostName"));
 		nHostPort = pAppSettings.GetInt(IntelliDiskSection, _T("HostPort"));
 		strDatabase = pAppSettings.GetString(IntelliDiskSection, _T("Database"));
 		strUsername = pAppSettings.GetString(IntelliDiskSection, _T("Username"));
