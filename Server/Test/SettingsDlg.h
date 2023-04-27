@@ -34,6 +34,9 @@ public:
 	CEdit m_ctrlDatabase;
 	CEdit m_ctrlUsername;
 	CEdit m_ctrlPassword;
+	CStatic m_ctrlStatusMessage;
+	CButton m_ctrlOK;
+	CButton m_ctrlCancel;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

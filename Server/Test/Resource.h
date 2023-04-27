@@ -22,6 +22,7 @@
 #define IDC_MYSQL_DATABSE               1009
 #define IDC_MYSQL_USERNAME              1010
 #define IDC_MYSQL_PASSWORD              1011
+#define IDC_STATUS                      1012
 
 // Next default values for new objects
 // 
@@ -29,7 +30,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1012
+#define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif

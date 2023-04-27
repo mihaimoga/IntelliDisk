@@ -44,6 +44,9 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MYSQL_DATABSE, m_ctrlDatabase);
 	DDX_Control(pDX, IDC_MYSQL_USERNAME, m_ctrlUsername);
 	DDX_Control(pDX, IDC_MYSQL_PASSWORD, m_ctrlPassword);
+	DDX_Control(pDX, IDC_STATUS, m_ctrlStatusMessage);
+	DDX_Control(pDX, IDOK, m_ctrlOK);
+	DDX_Control(pDX, IDCANCEL, m_ctrlCancel);
 }
 
 BEGIN_MESSAGE_MAP(CSettingsDlg, CDialogEx)
@@ -54,6 +57,8 @@ END_MESSAGE_MAP()
 BOOL CSettingsDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+
+	m_ctrlStatusMessage.SetWindowText(_T(""));
 
 	// TODO:  Add extra initialization here
 	const std::wstring strServicePort = utf8_to_wstring(std::to_string(LoadServicePort()));
@@ -113,7 +118,6 @@ bool CheckIfDatabaseConnected(const std::wstring& strHostName, const std::wstrin
 
 void CSettingsDlg::OnOK()
 {
-	// TODO: Add your specialized code here and/or call the base class
 	const int nMaxLength = 0x100;
 	TCHAR lpszServicePort[nMaxLength] = { 0, };
 	TCHAR lpszHostName[nMaxLength] = { 0, };
@@ -121,6 +125,11 @@ void CSettingsDlg::OnOK()
 	TCHAR lpszDatabase[nMaxLength] = { 0, };
 	TCHAR lpszUsername[nMaxLength] = { 0, };
 	TCHAR lpszPassword[nMaxLength] = { 0, };
+
+	m_ctrlOK.EnableWindow(FALSE);
+	m_ctrlCancel.EnableWindow(FALSE);
+
+	m_ctrlStatusMessage.SetWindowText(_T("Connecting..."));
 
 	m_ctrlServicePort.GetWindowText(lpszServicePort, nMaxLength);
 	m_ctrlHostName.GetWindowText(lpszHostName, nMaxLength);
@@ -131,15 +140,21 @@ void CSettingsDlg::OnOK()
 
 	if (CheckIfDatabaseConnected(lpszHostName, lpszHostPort, lpszDatabase, lpszUsername, lpszPassword))
 	{
+		m_ctrlStatusMessage.SetWindowText(_T("Connected!"));
+		Sleep(1000);
+
 		VERIFY(SaveServicePort(std::stoi(lpszServicePort)));
 		VERIFY(SaveAppSettings(lpszHostName, std::stoi(lpszHostPort), lpszDatabase, lpszUsername, lpszPassword));
 
-		MessageBox(_T("Database connection was successful! Everything is OK now..."), _T("MySQL ODBC Connection"), MB_OK);
+		// MessageBox(_T("Database connection was successful! Everything is OK now..."), _T("MySQL ODBC Connection"), MB_OK);
 
 		CDialogEx::OnOK();
 	}
 	else
 	{
+		m_ctrlStatusMessage.SetWindowText(_T("Failed to connect!"));
+		Sleep(10000);
+
 		CDialogEx::OnCancel();
 	}
 }

@@ -141,6 +141,7 @@ void CQuickTestDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PROGRESS, m_ctrlProgress);
+	DDX_Control(pDX, IDC_STATUS, m_ctrlStatusMessage);
 }
 
 BEGIN_MESSAGE_MAP(CQuickTestDlg, CDialogEx)
@@ -183,6 +184,7 @@ BOOL CQuickTestDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	m_ctrlStatusMessage.SetWindowText(_T(""));
 	StartProcessingThread();
 	m_ctrlProgress.SetMarquee(TRUE, 30);
 
@@ -250,10 +252,12 @@ void CQuickTestDlg::OnBnClickedSettings()
 	CSettingsDlg dlgSettings(this);
 	if (dlgSettings.DoModal() == IDOK)
 	{
+		m_ctrlStatusMessage.SetWindowText(_T("Restarting..."));
 		m_ctrlProgress.SetMarquee(FALSE, 30);
 		StopProcessingThread();
 		Sleep(1000);
 		StartProcessingThread();
 		m_ctrlProgress.SetMarquee(TRUE, 30);
+		m_ctrlStatusMessage.SetWindowText(_T(""));
 	}
 }

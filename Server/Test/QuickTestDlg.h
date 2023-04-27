@@ -33,18 +33,19 @@ public:
 
 
 // Implementation
-protected:
+public:
 	HICON m_hIcon;
+	CProgressCtrl m_ctrlProgress;
+	CStatic m_ctrlStatusMessage;
 
+protected:
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnDestroy();
+	afx_msg void OnBnClickedSettings();
 
 	DECLARE_MESSAGE_MAP()
-public:
-	CProgressCtrl m_ctrlProgress;
-	afx_msg void OnBnClickedSettings();
 };
