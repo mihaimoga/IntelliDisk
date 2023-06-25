@@ -36,9 +36,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HyperlinkStatic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sinstance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -66,6 +63,9 @@
     <ClInclude Include="IntelliDiskExt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HLinkCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IntelliDisk.cpp">
@@ -78,9 +78,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HyperlinkStatic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sinstance.cpp">
@@ -108,6 +105,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SocMFC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HLinkCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

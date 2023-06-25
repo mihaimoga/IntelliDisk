@@ -33,9 +33,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HyperlinkStatic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VersionInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +57,9 @@
     <ClInclude Include="..\base64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HLinkCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QuickTest.cpp">
@@ -69,9 +69,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HyperlinkStatic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VersionInfo.cpp">
@@ -90,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\base64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HLinkCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

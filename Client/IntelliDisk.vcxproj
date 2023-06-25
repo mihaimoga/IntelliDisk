@@ -190,11 +190,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ChildView.h" />
+    <ClInclude Include="HLinkCtrl.h" />
     <ClInclude Include="IntelliDiskExt.h" />
     <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="FileInformation.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="HyperlinkStatic.h" />
     <ClInclude Include="IntelliDisk.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="NotifyDirCheck.h" />
@@ -209,9 +209,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChildView.cpp" />
+    <ClCompile Include="HLinkCtrl.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
     <ClCompile Include="FileInformation.cpp" />
-    <ClCompile Include="HyperlinkStatic.cpp" />
     <ClCompile Include="IntelliDisk.cpp" />
     <ClCompile Include="IntelliDiskExt.cpp" />
     <ClCompile Include="MainFrame.cpp" />
