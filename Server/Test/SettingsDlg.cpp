@@ -19,6 +19,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "SettingsDlg.h"
 #include "afxdialogex.h"
 #include "../IntelliDiskExt.h"
+#include "../IntelliDiskINI.h"
 #include "../ODBCWrappers.h"
 #include <string>
 

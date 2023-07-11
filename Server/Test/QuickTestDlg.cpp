@@ -16,6 +16,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "pch.h"
 #include "framework.h"
+
 #include "QuickTest.h"
 #include "QuickTestDlg.h"
 #include "SettingsDlg.h"

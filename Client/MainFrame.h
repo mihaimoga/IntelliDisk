@@ -15,6 +15,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 //
 
 #pragma once
+
 #include "ChildView.h"
 #include "NTray.h"
 #include "FileInformation.h"

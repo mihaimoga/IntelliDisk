@@ -13,6 +13,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 // IntelliDisk.h : main header file for the IntelliDisk application
 //
+
 #pragma once
 
 #ifndef __AFXWIN_H__
@@ -40,7 +41,6 @@ public:
 	virtual int ExitInstance();
 
 // Implementation
-
 public:
 	virtual void PreLoadState();
 	virtual void LoadCustomState();

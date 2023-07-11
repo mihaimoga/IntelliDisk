@@ -39,6 +39,24 @@ std::string wstring_to_utf8(const std::wstring& str)
 	return myconv.to_bytes(str);
 }
 
+std::wstring encode_filepath(std::wstring strResult)
+{
+	const std::wstring strApplicationName = _T("IntelliDisk\\");
+	const std::wstring strSpecialFolder = GetSpecialFolder();
+	if (strResult.find(strSpecialFolder) == 0)
+		return strResult.replace(0, strSpecialFolder.length(), strApplicationName);
+	return strResult;
+}
+
+std::wstring decode_filepath(std::wstring strResult)
+{
+	const std::wstring strApplicationName = _T("IntelliDisk\\");
+	const std::wstring strSpecialFolder = GetSpecialFolder();
+	if (strResult.find(strApplicationName) == 0)
+		return strResult.replace(0, strApplicationName.length(), strSpecialFolder);
+	return strResult;
+}
+
 const std::string GetMachineID()
 {
 	/* LINUX:
@@ -449,7 +467,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 						nLength = (int)strCommand.length() + 1;
 						if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 						{
-							const std::string strASCII = wstring_to_utf8(strFilePath);
+							const std::string strASCII = wstring_to_utf8(encode_filepath(strFilePath));
 							const int nFileNameLength = (int)strASCII.length() + 1;
 							if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
 							{
@@ -465,7 +483,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 							nLength = (int)strCommand.length() + 1;
 							if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 							{
-								const std::string strASCII = wstring_to_utf8(strFilePath);
+								const std::string strASCII = wstring_to_utf8(encode_filepath(strFilePath));
 								const int nFileNameLength = (int)strASCII.length() + 1;
 								if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
 								{
@@ -481,7 +499,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 								nLength = (int)strCommand.length() + 1;
 								if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
 								{
-									const std::string strASCII = wstring_to_utf8(strFilePath);
+									const std::string strASCII = wstring_to_utf8(encode_filepath(strFilePath));
 									const int nFileNameLength = (int)strASCII.length() + 1;
 									if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
 									{

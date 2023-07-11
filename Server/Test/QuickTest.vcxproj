@@ -192,6 +192,7 @@
     <ClInclude Include="..\AppSettings.h" />
     <ClInclude Include="..\base64.h" />
     <ClInclude Include="..\IntelliDiskExt.h" />
+    <ClInclude Include="..\IntelliDiskINI.h" />
     <ClInclude Include="..\ODBCWrappers.h" />
     <ClInclude Include="..\SHA256.h" />
     <ClInclude Include="..\SocMFC.h" />
@@ -208,6 +209,7 @@
   <ItemGroup>
     <ClCompile Include="..\base64.cpp" />
     <ClCompile Include="..\IntelliDiskExt.cpp" />
+    <ClCompile Include="..\IntelliDiskINI.cpp" />
     <ClCompile Include="..\SHA256.cpp" />
     <ClCompile Include="..\SocMFC.cpp" />
     <ClCompile Include="HLinkCtrl.cpp" />

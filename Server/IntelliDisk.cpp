@@ -16,6 +16,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "pch.h"
 #include "framework.h"
+
 #include "IntelliDisk.h"
 #include "ServiceInstaller.h"
 #include "ServiceBase.h"
@@ -81,4 +82,3 @@ int wmain(int argc, wchar_t *argv[])
 
 	return 0;
 }
-

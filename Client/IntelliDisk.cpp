@@ -16,8 +16,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "pch.h"
 #include "framework.h"
-#include "afxwinappex.h"
-#include "afxdialogex.h"
+
 #include "IntelliDisk.h"
 #include "MainFrame.h"
 #include "IntelliDiskExt.h"
