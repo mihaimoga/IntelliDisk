@@ -57,6 +57,9 @@
     <ClInclude Include="IntelliDiskINI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IntelliDiskSQL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IntelliDisk.cpp">
@@ -84,6 +87,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IntelliDiskINI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IntelliDiskSQL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

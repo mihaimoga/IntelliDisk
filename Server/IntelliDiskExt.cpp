@@ -15,6 +15,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "IntelliDiskExt.h"
 #include "IntelliDiskINI.h"
+#include "IntelliDiskSQL.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,6 +84,36 @@ std::string wstring_to_utf8(const std::wstring& str)
 const int MAX_BUFFER = 0x10000;
 bool g_bIsConnected[MAX_SOCKET_CONNECTIONS];
 
+const char HEX_MAP[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+char replace(unsigned char c)
+{
+	return HEX_MAP[c & 0x0f];
+}
+
+std::string char_to_hex(unsigned char c)
+{
+	std::string hex;
+	// First four bytes
+	char left = (c >> 4);
+	// Second four bytes
+	char right = (c & 0x0f);
+
+	hex += replace(left);
+	hex += replace(right);
+	return hex;
+}
+
+std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
+{
+	std::string result;
+	for (int nIndex = 0; nIndex < nLength; nIndex++)
+	{
+		result += char_to_hex(pBuffer[nIndex]);
+		result += " ";
+	}
+	return utf8_to_wstring(result);
+}
+
 bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT)
 {
 	int nIndex = 0;
@@ -112,18 +143,18 @@ bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned c
 				((nIndex = pApplicationSocket.Receive(pBuffer + nIndex, MAX_BUFFER - nLength)) > 0))
 			{
 				nLength += nIndex;
-				TRACE(_T("Buffer Received\n"));
+				TRACE(_T("Buffer Received %s\n"), dumpHEX(pBuffer, nLength).c_str());
 				nReturn = (pBuffer[nLength - 1] == calcLRC(&pBuffer[3], (nLength - 5))) ? ACK : NAK;
 			}
-			TRACE(_T("%s Sent\n"), ((ACK == nReturn) ? _T("ACK") : _T("NAK")));
 			VERIFY(pApplicationSocket.Send(&nReturn, sizeof(nReturn)) == 1);
+			TRACE(_T("%s Sent\n"), ((ACK == nReturn) ? _T("ACK") : _T("NAK")));
 		} while ((ACK != nReturn) && (++nCount < 3));
 		if (ReceiveEOT)
 		{
-			nLength = MAX_BUFFER;
+			unsigned char chEOT = ACK;
 			if (pApplicationSocket.IsReadible(1000) &&
-				((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
-				(EOT == pBuffer[nLength - 1]))
+				((nLength = pApplicationSocket.Receive(&chEOT, sizeof(chEOT))) > 0) &&
+				(EOT == chEOT))
 			{
 				TRACE(_T("EOT Received\n"));
 			}
@@ -142,6 +173,7 @@ bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned c
 		g_bIsConnected[nSocketIndex] = false;
 		return false;
 	}
+	TRACE(_T("ReadBuffer: %s\n"), ((ACK == nReturn) ? _T("true") : _T("false")));
 	return (ACK == nReturn);
 }
 
@@ -153,7 +185,7 @@ bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const uns
 
 	try
 	{
-		ASSERT(nLength < sizeof(pPacket));
+		ASSERT(nLength <= (sizeof(pPacket) - 5));
 		if (SendENQ && pApplicationSocket.IsWritable(1000))
 		{
 			unsigned char chENQ = ENQ;
@@ -180,7 +212,9 @@ bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const uns
 		do {
 			if (pApplicationSocket.Send(pPacket, (5 + nLength)) == (5 + nLength))
 			{
+				TRACE(_T("Buffer Sent %s\n"), dumpHEX(pPacket, (5 + nLength)).c_str());
 				VERIFY(pApplicationSocket.Receive(&nReturn, sizeof(nReturn)) == 1);
+				TRACE(_T("%s Received\n"), ((ACK == nReturn) ? _T("ACK") : _T("NAK")));
 			}
 		} while ((nReturn != ACK) && (++nCount <= 3));
 		if (SendEOT && pApplicationSocket.IsWritable(1000))
@@ -201,7 +235,8 @@ bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const uns
 		g_bIsConnected[nSocketIndex] = false;
 		return false;
 	}
-	return (nReturn == ACK);
+	TRACE(_T("WriteBuffer: %s\n"), ((ACK == nReturn) ? _T("true") : _T("false")));
+	return (ACK == nReturn);
 }
 
 void PushNotification(const int& nSocketIndex, const int nFileEvent, const std::wstring& strFilePath)
@@ -331,13 +366,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 									{
 										const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 										TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
-										nLength = sizeof(pBuffer);
-										ZeroMemory(pBuffer, sizeof(pBuffer));
-										if (((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
-											(EOT == pBuffer[nLength - 1]))
-										{
-											TRACE(_T("EOT Received\n"));
-										}
+										VERIFY(DownloadFile(nSocketIndex, pApplicationSocket, strFilePath));
 									}
 								}
 								else
@@ -350,12 +379,12 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 										{
 											const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 											TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
-											nLength = sizeof(pBuffer);
-											ZeroMemory(pBuffer, sizeof(pBuffer));
-											if (((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
-												(EOT == pBuffer[nLength - 1]))
+											VERIFY(UploadFile(nSocketIndex, pApplicationSocket, strFilePath));
+											// Notify all other Clients
+											for (int nThreadIndex = 0; nThreadIndex < g_nSocketCount; nThreadIndex++)
 											{
-												TRACE(_T("EOT Received\n"));
+												if (nThreadIndex != nSocketIndex) // skip current thread queue
+													PushNotification(nThreadIndex, ID_FILE_DOWNLOAD, strFilePath);
 											}
 										}
 									}
@@ -369,12 +398,12 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 											{
 												const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 												TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
-												nLength = sizeof(pBuffer);
-												ZeroMemory(pBuffer, sizeof(pBuffer));
-												if (((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
-													(EOT == pBuffer[nLength - 1]))
+												VERIFY(DeleteFile(nSocketIndex, pApplicationSocket, strFilePath));
+												// Notify all other Clients
+												for (int nThreadIndex = 0; nThreadIndex < g_nSocketCount; nThreadIndex++)
 												{
-													TRACE(_T("EOT Received\n"));
+													if (nThreadIndex != nSocketIndex) // skip current thread queue
+														PushNotification(nThreadIndex, ID_FILE_DELETE, strFilePath);
 												}
 											}
 										}
@@ -394,6 +423,44 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 					if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, true))
 					{
 						TRACE(_T("Restart!\n"));
+					}
+				}
+				else
+				{
+					if (pThreadData->nNextIn != pThreadData->nNextOut)
+					{
+						int nFileEvent = 0;
+						std::wstring strFilePath;
+						PopNotification(nSocketIndex, nFileEvent, strFilePath);
+						if (ID_FILE_DOWNLOAD == nFileEvent)
+						{
+							const std::string strCommand = "NotifyDownload";
+							nLength = (int)strCommand.length() + 1;
+							if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, false))
+							{
+								const std::string strFileName = wstring_to_utf8(strFilePath);
+								nLength = (int)strFileName.length() + 1;
+								if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strFileName.c_str(), nLength, false, false))
+								{
+									TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
+									VERIFY(DownloadFile(nSocketIndex, pApplicationSocket, strFilePath));
+								}
+							}
+						}
+						else if (ID_FILE_DELETE == nFileEvent)
+						{
+							const std::string strCommand = "NotifyDelete";
+							nLength = (int)strCommand.length() + 1;
+							if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, false))
+							{
+								const std::string strFileName = wstring_to_utf8(strFilePath);
+								nLength = (int)strFileName.length() + 1;
+								if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strFileName.c_str(), nLength, false, false))
+								{
+									TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
+								}
+							}
+						}
 					}
 				}
 			}
@@ -440,14 +507,14 @@ int g_nServicePort = IntelliDiskPort;
 DWORD WINAPI CreateDatabase(LPVOID lpParam)
 {
 	UNREFERENCED_PARAMETER(lpParam);
-	g_nServicePort = LoadServicePort();
-	if (!LoadAppSettings(g_strHostName, g_nHostPort, g_strDatabase, g_strUsername, g_strPassword))
-	{
-		// return (DWORD)-1;
-	}
 	try
 	{
 		TRACE(_T("CreateDatabase()\n"));
+		g_nServicePort = LoadServicePort();
+		if (!LoadAppSettings(g_strHostName, g_nHostPort, g_strDatabase, g_strUsername, g_strPassword))
+		{
+			// return (DWORD)-1;
+		}
 		g_pServerSocket.CreateAndBind(g_nServicePort, SOCK_STREAM, AF_INET);
 		if (g_pServerSocket.IsCreated())
 		{
@@ -504,7 +571,9 @@ void StopProcessingThread()
 			pClosingSocket.CreateAndConnect(IntelliDiskIP, g_nServicePort);
 			WaitForMultipleObjects(g_nThreadCount, g_hThreadArray, TRUE, INFINITE);
 			pClosingSocket.Close();
-			// g_nSocketCount = 0;
+			for (int nIndex = 0; nIndex < g_nSocketCount; nIndex++)
+				g_pClientSocket[nIndex].Close();
+			g_nSocketCount = 0;
 			g_nThreadCount = 0;
 		}
 	}

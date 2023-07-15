@@ -13,6 +13,9 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #pragma once
 
+#ifndef __INTELLIDISK_EXT__
+#define __INTELLIDISK_EXT__
+
 #include "FileInformation.h"
 #include "NotifyDirCheck.h"
 #include "SocMFC.h"
@@ -43,7 +46,12 @@ bool InstallStartupApps(bool bInstallStartupApps);
 bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT);
 bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT);
 
+bool DownloadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath);
+bool UploadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath);
+
 UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData);
 DWORD WINAPI ProducerThread(LPVOID lpParam);
 DWORD WINAPI ConsumerThread(LPVOID lpParam);
 void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lpParam);
+
+#endif

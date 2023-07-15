@@ -13,6 +13,9 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #pragma once
 
+#ifndef __INTELLIDISK_INI__
+#define __INTELLIDISK_INI__
+
 #define IntelliDiskIP _T("127.0.0.1")
 #define IntelliDiskPort 8080
 #define IntelliDiskSection _T("IntelliDisk")
@@ -21,3 +24,5 @@ const int LoadServicePort();
 bool SaveServicePort(const int nServicePort);
 bool LoadAppSettings(std::wstring& strHostName, int& nHostPort, std::wstring& strDatabase, std::wstring& strUsername, std::wstring& strPassword);
 bool SaveAppSettings(const std::wstring& strHostName, const int nHostPort, const std::wstring& strDatabase, const std::wstring& strUsername, const std::wstring& strPassword);
+
+#endif

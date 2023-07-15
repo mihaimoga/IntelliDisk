@@ -88,6 +88,10 @@ bool LoadAppSettings(std::wstring& strHostName, int& nHostPort, std::wstring& st
 	// LoadServicePort() must be called before to do CoInitialize(nullptr)
 	TRACE(_T("LoadAppSettings\n"));
 	try {
+		const HRESULT hr{ CoInitialize(nullptr) };
+		if (FAILED(hr))
+			return false;
+
 		CXMLAppSettings pAppSettings(GetAppSettingsFilePath(), true, true);
 		strHostName = pAppSettings.GetString(IntelliDiskSection, _T("HostName"));
 		nHostPort = pAppSettings.GetInt(IntelliDiskSection, _T("HostPort"));

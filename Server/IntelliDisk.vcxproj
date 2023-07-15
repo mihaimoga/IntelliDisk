@@ -159,6 +159,7 @@
     <ClInclude Include="IntelliDisk.h" />
     <ClInclude Include="IntelliDiskExt.h" />
     <ClInclude Include="IntelliDiskINI.h" />
+    <ClInclude Include="IntelliDiskSQL.h" />
     <ClInclude Include="ODBCWrappers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
@@ -173,6 +174,7 @@
     <ClCompile Include="IntelliDisk.cpp" />
     <ClCompile Include="IntelliDiskExt.cpp" />
     <ClCompile Include="IntelliDiskINI.cpp" />
+    <ClCompile Include="IntelliDiskSQL.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -13,6 +13,9 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #pragma once
 
+#ifndef __INTELLIDISK_EXT__
+#define __INTELLIDISK_EXT__
+
 #include "SocMFC.h"
 
 inline unsigned char calcLRC(const unsigned char* buffer, const int length)
@@ -38,3 +41,5 @@ bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const uns
 
 void StartProcessingThread();
 void StopProcessingThread();
+
+#endif

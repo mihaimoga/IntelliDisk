@@ -20,6 +20,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "afxdialogex.h"
 #include "../IntelliDiskExt.h"
 #include "../IntelliDiskINI.h"
+#include "../IntelliDiskSQL.h"
 #include "../ODBCWrappers.h"
 #include <string>
 
@@ -86,9 +87,9 @@ BOOL CSettingsDlg::OnInitDialog()
 #define ODBC_CHECK_RETURN_FALSE(nRet, handle) \
 	handle.ValidateReturnValue(nRet); \
 	if (!SQL_SUCCEEDED(nRet)) \
-	{ \
-		return false; \
-	}
+{ \
+	return false; \
+}
 
 bool CheckIfDatabaseConnected(const std::wstring& strHostName, const std::wstring& strHostPort, const std::wstring& strDatabase, const std::wstring& strUsername, const std::wstring& strPassword)
 {
@@ -114,6 +115,14 @@ bool CheckIfDatabaseConnected(const std::wstring& strHostName, const std::wstrin
 	nRet = pConnection.DriverConnect(const_cast<SQLTCHAR*>(reinterpret_cast<const SQLTCHAR*>(sConnectionInString)), sConnectionOutString);
 	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
 
+	CGenericStatement pGenericStatement;
+	VERIFY(pGenericStatement.Execute(pConnection, _T("DROP TABLE IF EXISTS `filedata`;")));
+	VERIFY(pGenericStatement.Execute(pConnection, _T("DROP TABLE IF EXISTS `filename`;")));
+	VERIFY(pGenericStatement.Execute(pConnection, _T("CREATE TABLE `filename` (`filename_id` BIGINT NOT NULL AUTO_INCREMENT, `filepath` VARCHAR(256) NOT NULL, `filesize` BIGINT NOT NULL, PRIMARY KEY(`filename_id`)) ENGINE=InnoDB;")));
+	VERIFY(pGenericStatement.Execute(pConnection, _T("CREATE TABLE `filedata` (`filedata_id` BIGINT NOT NULL AUTO_INCREMENT, `filename_id` BIGINT NOT NULL, `content` LONGTEXT NOT NULL, `base64` BIGINT NOT NULL, PRIMARY KEY(`filedata_id`), FOREIGN KEY filedata_fk(filename_id) REFERENCES filename(filename_id)) ENGINE=InnoDB;")));
+	VERIFY(pGenericStatement.Execute(pConnection, _T("CREATE UNIQUE INDEX index_filepath ON `filename`(`filepath`);")));
+
+	pConnection.Disconnect();
 	return true;
 }
 
@@ -147,7 +156,7 @@ void CSettingsDlg::OnOK()
 		VERIFY(SaveServicePort(std::stoi(lpszServicePort)));
 		VERIFY(SaveAppSettings(lpszHostName, std::stoi(lpszHostPort), lpszDatabase, lpszUsername, lpszPassword));
 
-		// MessageBox(_T("Database connection was successful! Everything is OK now..."), _T("MySQL ODBC Connection"), MB_OK);
+		MessageBox(_T("Database connection was successful! Everything is OK now..."), _T("MySQL ODBC Connection"), MB_OK);
 
 		CDialogEx::OnOK();
 	}
