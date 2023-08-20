@@ -102,6 +102,14 @@ protected:
 	afx_msg void OnViewOnline();
 public:
 	afx_msg void ShowMessage(const std::wstring& strMessage, const std::wstring& strFilePath);
+protected:
+	afx_msg void OnTwitter();
+	afx_msg void OnLinkedin();
+	afx_msg void OnFacebook();
+	afx_msg void OnInstagram();
+	afx_msg void OnIssues();
+	afx_msg void OnDiscussions();
+	afx_msg void OnWiki();
 
 	DECLARE_MESSAGE_MAP()
 };

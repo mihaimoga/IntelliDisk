@@ -48,13 +48,20 @@
 #define ID_SETTINGS                     32773
 #define ID_OPEN_FOLDER                  32774
 #define ID_VIEW_ONLINE                  32775
+#define IDC_TWITTER                     32776
+#define IDC_LINKEDIN                    32777
+#define IDC_FACEBOOK                    32778
+#define IDC_INSTAGRAM                   32779
+#define IDC_ISSUES                      32780
+#define IDC_DISCUSSIONS                 32781
+#define IDC_WIKI                        32782
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        318
-#define _APS_NEXT_COMMAND_VALUE         32776
+#define _APS_NEXT_COMMAND_VALUE         32783
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           317
 #endif

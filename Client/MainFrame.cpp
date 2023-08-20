@@ -46,6 +46,13 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_COMMAND(ID_SETTINGS, &CMainFrame::OnSettings)
 	ON_COMMAND(ID_OPEN_FOLDER, &CMainFrame::OnOpenFolder)
 	ON_COMMAND(ID_VIEW_ONLINE, &CMainFrame::OnViewOnline)
+	ON_COMMAND(IDC_TWITTER, &CMainFrame::OnTwitter)
+	ON_COMMAND(IDC_LINKEDIN, &CMainFrame::OnLinkedin)
+	ON_COMMAND(IDC_FACEBOOK, &CMainFrame::OnFacebook)
+	ON_COMMAND(IDC_INSTAGRAM, &CMainFrame::OnInstagram)
+	ON_COMMAND(IDC_ISSUES, &CMainFrame::OnIssues)
+	ON_COMMAND(IDC_DISCUSSIONS, &CMainFrame::OnDiscussions)
+	ON_COMMAND(IDC_WIKI, &CMainFrame::OnWiki)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -301,4 +308,39 @@ void CMainFrame::ShowMessage(const std::wstring& strMessage, const std::wstring&
 	lviItem.iImage = pshFileInfo.iIcon;
 	VERIFY(m_wndView.GetListCtrl().SetItem(&lviItem));
 	m_wndView.GetListCtrl().EnsureVisible(nListItem, FALSE);
+}
+
+void CMainFrame::OnTwitter()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://twitter.com/stefanmihaimoga"), nullptr, nullptr, SW_SHOW);
+}
+
+void CMainFrame::OnLinkedin()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://www.linkedin.com/in/stefanmihaimoga/"), nullptr, nullptr, SW_SHOW);
+}
+
+void CMainFrame::OnFacebook()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://www.facebook.com/stefanmihaimoga"), nullptr, nullptr, SW_SHOW);
+}
+
+void CMainFrame::OnInstagram()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://www.instagram.com/stefanmihaimoga/"), nullptr, nullptr, SW_SHOW);
+}
+
+void CMainFrame::OnIssues()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://github.com/mihaimoga/IntelliDisk/issues"), nullptr, nullptr, SW_SHOW);
+}
+
+void CMainFrame::OnDiscussions()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://github.com/mihaimoga/IntelliDisk/discussions"), nullptr, nullptr, SW_SHOW);
+}
+
+void CMainFrame::OnWiki()
+{
+	::ShellExecute(GetSafeHwnd(), _T("open"), _T("https://github.com/mihaimoga/IntelliDisk/wiki"), nullptr, nullptr, SW_SHOW);
 }
