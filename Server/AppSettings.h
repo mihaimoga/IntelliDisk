@@ -36,7 +36,7 @@ History: PJN / 12-06-2006 1. Minor update to a comment
                           6. Updated the code to clean compile on VC 2005
                           7. Fixed a bug in CXMLAppSettings::GetBinary where returned binary data was being returned incorrectly.
          PJN / 19-08-2006 1. Fixed compile problems when code is compiled in a mixed MFC / ATL project.
-                          2. Addition of "WriteProfile..." functions to IAppSettings which provides similiar functionality to the MFC CWinApp functions of the same
+                          2. Addition of "WriteProfile..." functions to IAppSettings which provides similar functionality to the MFC CWinApp functions of the same
                           name. These new functions allow you to ignore errors reading a value and instead return a default value.
                           3. Removed the MFC C++ runtime macros from CAppSettingsException as they were not really required.
          PJN / 02-01-2007 1. Updated copyright details.
@@ -121,8 +121,12 @@ History: PJN / 12-06-2006 1. Minor update to a comment
          PJN / 30-01-2022 1. Updated copyright details.
                           2. Fixed more static code analysis warnings in Visual Studio 2022.
                           3. Updated the code to use C++ uniform initialization for all variable declarations
+         PJN / 14-05-2023 1. Updated copyright details
+                          2. Updated module to indicate that it needs to be compiled using /std:c++17. Thanks to Martin Richter
+                          for reporting this issue.
+         PJN / 03-10-2023 1. Optimized construction of various std::vector and std::[w]string instances throughout the codebase.
 
-Copyright (c) 2006 - 2022 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2006 - 2023 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -140,6 +144,10 @@ to maintain a single distribution point for the source code.
 //////////////////////// Macros / Defines /////////////////////////////////////
 
 #pragma once
+
+#if _MSVC_LANG < 201703
+#error AppSettings requires a minimum C++ language standard of /std:c++17
+#endif //#if _MSVC_LANG < 201703
 
 #ifndef __APPSETTINGS_H__
 #define __APPSETTINGS_H__
@@ -347,14 +355,14 @@ public:
 		return bSuccess;
 	}
 
-	virtual bool GetProfileStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _Out_ std::vector<String>& array)
+	virtual bool GetProfileStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _Out_ std::vector<String>& arr)
 	{
 		//What will be the the return value (assume the best)
 		bool bSuccess = true;
 
 		try
 		{
-			array = GetStringArray(lpszSection, lpszEntry);
+			arr = GetStringArray(lpszSection, lpszEntry);
 		}
 		catch (CAppSettingsException& /*e*/)
 		{
@@ -369,7 +377,7 @@ public:
 	virtual void WriteInt(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ int nValue) = 0;
 	virtual void WriteString(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_z_ LPCTSTR lpszValue) = 0;
 	virtual void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes) = 0;
-	virtual void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array) = 0;
+	virtual void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr) = 0;
 	virtual void WriteSection(_In_opt_z_ LPCTSTR lpszSection, _In_ const std::vector<String>& sectionEntries) = 0;
 
 	//Helper methods
@@ -396,7 +404,7 @@ public:
 };
 
 
-//The base app settings class which reads / writes application setttings to the windows registry
+//The base app settings class which reads / writes application settings to the windows registry
 class CRegistryAppSettings : public IAppSettings
 {
 public:
@@ -411,7 +419,7 @@ public:
 		m_bWriteFlush = bWriteFlush;
 	}
 
-	bool GetWriteFlush() const noexcept
+	[[nodiscard]] bool GetWriteFlush() const noexcept
 	{
 		return m_bWriteFlush;
 	}
@@ -477,10 +485,9 @@ public:
 
 		const size_t nAllocatedSizeChars{ (dwCount / sizeof(TCHAR)) + 1 }; //+1 is to allow us to safely null terminate the data
 		const size_t nAllocatedSizeBytes{ nAllocatedSizeChars * sizeof(TCHAR) };
-		String strValue;
-		strValue.resize(nAllocatedSizeChars);
+		String strValue{ nAllocatedSizeChars, _T('\0'), std::allocator<TCHAR>{} };
 #pragma warning(suppress: 26429 26446)
-		LPTSTR pszStrValue{ (LPTSTR)(strValue.data()) };
+		LPTSTR pszStrValue{ strValue.data() };
 #pragma warning(suppress: 26490)
 		lResult = RegQueryValueEx(hSecKey, lpszEntry, nullptr, &dwType, reinterpret_cast<LPBYTE>(pszStrValue), &dwCount);
 		RegCloseKey(hSecKey);
@@ -511,9 +518,6 @@ public:
 #pragma warning(suppress: 26477)
 		ATLASSERT(lpszEntry != nullptr);
 
-		//What will be the return value from this method
-		std::vector<BYTE> data;
-
 		//Try to get the section key
 		HKEY hSecKey{ GetSectionKey(lpszSection, true) };
 #pragma warning(suppress: 26477)
@@ -533,7 +537,7 @@ public:
 			RegCloseKey(hSecKey); //Close the section key before we throw the exception
 			ThrowWin32AppSettingsException(ERROR_INVALID_DATATYPE);
 		}
-		data.resize(dwCount);
+		std::vector<BYTE> data{ dwCount, std::allocator<BYTE>{} };
 		lResult = RegQueryValueEx(hSecKey, lpszEntry, nullptr, &dwType, data.data(), &dwCount);
 		RegCloseKey(hSecKey);
 		if (lResult != ERROR_SUCCESS)
@@ -551,7 +555,7 @@ public:
 		ATLASSERT(lpszSection != nullptr);
 
 		//What will be the return value from this method
-		std::vector<String> array;
+		std::vector<String> arr;
 
 		//Try to get the section key
 		HKEY hSecKey{ GetSectionKey(lpszSection, true) };
@@ -561,7 +565,7 @@ public:
 		//Call the helper function which does the heavy lifting
 		try
 		{
-			array = GetStringArrayFromRegistry(hSecKey, lpszEntry);
+			arr = GetStringArrayFromRegistry(hSecKey, lpszEntry);
 		}
 #pragma warning(suppress: 26496)
 		catch (CAppSettingsException& e)
@@ -573,7 +577,7 @@ public:
 		//Close the key before we return
 		RegCloseKey(hSecKey);
 
-		return array;
+		return arr;
 	}
 
 	std::vector<String> GetSections() override
@@ -634,9 +638,8 @@ public:
 			ThrowWin32AppSettingsException(nSuccess);
 
 		//Allocate the memory we want
-		std::vector<TCHAR> szValueName;
 #pragma warning(suppress: 26472)
-		szValueName.resize(static_cast<size_t>(dwMaxValueNameLen) + 1); //+1 is for the null terminator
+		std::vector<TCHAR> szValueName{ static_cast<size_t>(dwMaxValueNameLen) + 1, std::allocator<TCHAR>{} }; //+1 is for the null terminator
 
 		//Now enumerate all the values for the section key
 #pragma warning(suppress: 26446)
@@ -704,31 +707,31 @@ public:
 
 	void WriteInt(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ int nValue) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteInt(lpszSection, lpszEntry, nValue, m_bWriteFlush);
 	}
 
 	void WriteString(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_z_ LPCTSTR lpszValue) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteString(lpszSection, lpszEntry, lpszValue, m_bWriteFlush);
 	}
 
 	void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteBinary(lpszSection, lpszEntry, pData, dwBytes, m_bWriteFlush);
 	}
 
-	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array) override
+	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
-		WriteStringArray(lpszSection, lpszEntry, array, m_bWriteFlush);
+		//Just delegate to the version which specifies the flush setting as a parameter
+		WriteStringArray(lpszSection, lpszEntry, arr, m_bWriteFlush);
 	}
 
 	void WriteSection(_In_opt_z_ LPCTSTR lpszSection, _In_ const std::vector<String>& sectionEntries) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteSection(lpszSection, sectionEntries, m_bWriteFlush);
 	}
 
@@ -865,7 +868,7 @@ public:
 		RegCloseKey(hSecKey);
 	}
 
-	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array, _In_ bool bFlush)
+	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr, _In_ bool bFlush)
 	{
 		//Validate our parameters
 #pragma warning(suppress: 26477)
@@ -879,7 +882,7 @@ public:
 		//Call the helper function which does the heavy lifting
 		try
 		{
-			SetStringArrayIntoRegistry(hSecKey, lpszEntry, array);
+			SetStringArrayIntoRegistry(hSecKey, lpszEntry, arr);
 		}
 #pragma warning(suppress: 26496)
 		catch (CAppSettingsException& e)
@@ -983,9 +986,6 @@ protected:
 #pragma warning(suppress: 26477)
 		ATLASSERT(lpszEntry != nullptr);
 
-		//Empty the array before we go any further
-		std::vector<String> array;
-
 		//Get the type and size of the data
 		DWORD dwType{ 0 };
 		DWORD dwCount{ 0 };
@@ -997,8 +997,7 @@ protected:
 
 		//Allocate some heap memory to hold the data
 		const size_t nAllocatedSizeBytes{ dwCount + (2 * sizeof(TCHAR)) }; //the + (2 * sizeof(TCHAR)) is to allow us to safely doubly null terminate the data
-		std::vector<BYTE> dataBuffer;
-		dataBuffer.resize(nAllocatedSizeBytes);
+		std::vector<BYTE> dataBuffer{ nAllocatedSizeBytes, std::allocator<BYTE>{} };
 
 		lResult = RegQueryValueEx(hKey, lpszEntry, nullptr, &dwType, dataBuffer.data(), &dwCount);
 		if (lResult != ERROR_SUCCESS)
@@ -1021,19 +1020,20 @@ protected:
 		lpszStrings[(dwCount / sizeof(TCHAR)) + 1] = _T('\0');
 
 		//Iterate thro the multi SZ string and add each one to the string array
+		std::vector<String> arr;
 #pragma warning(suppress: 26481 26489)
 		while (lpszStrings[0] != _T('\0'))
 		{
 #pragma warning(suppress: 26486 26489)
-			array.emplace_back(lpszStrings);
+			arr.emplace_back(lpszStrings);
 #pragma warning(suppress: 26481 26486)
 			lpszStrings += (_tcslen(lpszStrings) + 1);
 		}
 
-		return array;
+		return arr;
 	}
 
-	static void SetStringArrayIntoRegistry(_In_ HKEY hKey, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array)
+	static void SetStringArrayIntoRegistry(_In_ HKEY hKey, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr)
 	{
 		//Validate our input parameters
 #pragma warning(suppress: 26477)
@@ -1043,21 +1043,20 @@ protected:
 
 		//Work out the size of the buffer we will need
 		size_t nSize{ 0 };
-		for (const auto& entry : array)
+		for (const auto& entry : arr)
 			nSize += (entry.length() + 1); //1 extra for each null terminator
 
 		  //Need one second null for the double null at the end
 		nSize++;
 
 		//Allocate the memory we want
-		std::vector<TCHAR> dataBuffer;
-		dataBuffer.resize(nSize);
+		std::vector<TCHAR> dataBuffer{ nSize, std::allocator<TCHAR>{} };
 
 		//Now copy the strings into the buffer
 #pragma warning(suppress: 26429)
 		LPTSTR lpszString{ dataBuffer.data() };
 		size_t nCurOffset{ 0 };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 		{
 			const auto nCurrentStringLength{ sText.length() };
 #pragma warning(suppress: 26481)
@@ -1094,7 +1093,7 @@ public:
 		m_sProductName = sProductName;
 	}
 
-	String GetProductName() const
+	[[nodiscard]] String GetProductName() const
 	{
 		return m_sProductName;
 	}
@@ -1104,7 +1103,7 @@ public:
 		m_sCompanyName = sCompanyName;
 	}
 
-	String GetCompanyName() const
+	[[nodiscard]] String GetCompanyName() const
 	{
 		return m_sCompanyName;
 	}
@@ -1114,7 +1113,7 @@ public:
 		m_sProductVersion = sProductVersion;
 	}
 
-	String GetProductVersion() const
+	[[nodiscard]] String GetProductVersion() const
 	{
 		return m_sProductVersion;
 	}
@@ -1179,7 +1178,7 @@ protected:
 };
 
 
-//The app settings class which reads / writes application setttings to the HKLM node in the windows registry
+//The app settings class which reads / writes application settings to the HKLM node in the windows registry
 class CHKLMAppSettings : public CRegistryApplicationAppSettings
 {
 public:
@@ -1202,7 +1201,7 @@ protected:
 };
 
 
-//The app settings class which reads / writes application setttings to the HKLM node in the windows registry
+//The app settings class which reads / writes application settings to the HKLM node in the windows registry
 class CHKCUAppSettings : public CRegistryApplicationAppSettings
 {
 public:
@@ -1224,7 +1223,7 @@ protected:
 	}
 };
 
-//The app settings class which reads / writes setttings to the HKLM\System\CurrentControlSet\Services\"ServiceName"\Parameters node in the windows registry
+//The app settings class which reads / writes settings to the HKLM\System\CurrentControlSet\Services\"ServiceName"\Parameters node in the windows registry
 class CServicesAppSettings : public CRegistryAppSettings
 {
 public:
@@ -1241,7 +1240,7 @@ public:
 		m_sServiceName = sServiceName;
 	}
 
-	String GetServiceName() const
+	[[nodiscard]] String GetServiceName() const
 	{
 		return m_sServiceName;
 	}
@@ -1274,7 +1273,7 @@ protected:
 		if (lResult != ERROR_SUCCESS)
 			ThrowWin32AppSettingsException(lResult);
 
-		//Open the Parmameters key
+		//Open the Parameters key
 		HKEY hParametersKey{ nullptr };
 		lResult = RegCreateKeyEx(hServiceKey, _T("Parameters"), 0, nullptr, REG_OPTION_NON_VOLATILE, samDesired, nullptr, &hParametersKey, nullptr);
 		RegCloseKey(hServiceKey);
@@ -1289,7 +1288,7 @@ protected:
 };
 
 
-//The App settings class which reads / writes application setttings to an windows ini file
+//The App settings class which reads / writes application settings to an windows ini file
 class CIniAppSettings : public IAppSettings
 {
 public:
@@ -1304,7 +1303,7 @@ public:
 		m_sIniFile = sIniFile;
 	}
 
-	String GetIniFile() const
+	[[nodiscard]] String GetIniFile() const
 	{
 		return m_sIniFile;
 	}
@@ -1348,16 +1347,13 @@ public:
 
 	std::vector<BYTE> GetBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry) override
 	{
-		//What will be the return value from this method
-		std::vector<BYTE> data;
-
 		String sBinary{ GetString(lpszSection, lpszEntry) };
 		const auto nLen{ sBinary.length() };
 		if (nLen == 0)
-			return data;
+			return std::vector<BYTE>{};
 		if (nLen % 2)
 			ThrowWin32AppSettingsException(ERROR_INVALID_DATA);
-		data.resize(nLen / 2);
+		std::vector<BYTE> data{ nLen / 2, std::allocator<BYTE>{} };
 		for (size_t i = 0; i < nLen; i += 2)
 		{
 #pragma warning(suppress: 26446 26472)
@@ -1369,25 +1365,23 @@ public:
 
 	std::vector<String> GetStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry) override
 	{
-		//What will be the return value from this method
-		std::vector<String> array;
-
 		//Try to get the binary data first
 		std::vector<BYTE> data{ GetBinary(lpszSection, lpszEntry) };
 		if (data.size() == 0)
-			return array;
+			return std::vector<String>{};
 
+		std::vector<String> arr;
 #pragma warning(suppress: 26429 26490)
 		auto lpszStrings{ reinterpret_cast<LPTSTR>(data.data()) };
 #pragma warning(suppress: 26481 26489)
 		while (lpszStrings[0] != _T('\0'))
 		{
 #pragma warning(suppress: 26486)
-			array.emplace_back(lpszStrings);
+			arr.emplace_back(lpszStrings);
 #pragma warning(suppress: 26481 26486)
 			lpszStrings += (_tcslen(lpszStrings) + 1);
 		}
-		return array;
+		return arr;
 	}
 
 	std::vector<String> GetSections() override
@@ -1400,21 +1394,20 @@ public:
 		while (!bSuccess)
 		{
 			//Allocate some heap memory for the SDK call
-			std::vector<TCHAR> sectionsBuffer;
-			sectionsBuffer.resize(dwSize);
+			std::vector<TCHAR> sectionsBuffer{ dwSize, std::allocator<TCHAR>{} };
 
 			//Call the SDK function
-			const DWORD dwRetreived{ GetPrivateProfileString(nullptr, nullptr, nullptr, sectionsBuffer.data(), dwSize, m_sIniFile.c_str()) };
-			if (dwRetreived == (dwSize - 2))
+			const DWORD dwRetrieved{ GetPrivateProfileString(nullptr, nullptr, nullptr, sectionsBuffer.data(), dwSize, m_sIniFile.c_str()) };
+			if (dwRetrieved == (dwSize - 2))
 			{
 				//Realloc the array by doubling its size ready for the next loop around
 				dwSize *= 2;
 			}
-			else if (dwRetreived == 0)
+			else if (dwRetrieved == 0)
 			{
 				const DWORD dwError{ GetLastError() };
 
-				//Only consider it an error if no data was retreived and GetLastError flagged an error
+				//Only consider it an error if no data was retrieved and GetLastError flagged an error
 				if (dwError)
 					ThrowWin32AppSettingsException(dwError);
 				else
@@ -1458,25 +1451,24 @@ public:
 		while (!bSuccess)
 		{
 			//Allocate some heap memory for the SDK call
-			std::vector<TCHAR> sectionEntriesBuffer;
-			sectionEntriesBuffer.resize(dwSize);
+			std::vector<TCHAR> sectionEntriesBuffer{ dwSize, std::allocator<TCHAR>{} };
 
 			//Call the SDK function
-			DWORD dwRetreived{ 0 };
+			DWORD dwRetrieved{ 0 };
 			if (bWithValues)
-				dwRetreived = GetPrivateProfileSection(lpszSection, sectionEntriesBuffer.data(), dwSize, m_sIniFile.c_str());
+				dwRetrieved = GetPrivateProfileSection(lpszSection, sectionEntriesBuffer.data(), dwSize, m_sIniFile.c_str());
 			else
-				dwRetreived = GetPrivateProfileString(lpszSection, nullptr, nullptr, sectionEntriesBuffer.data(), dwSize, m_sIniFile.c_str());
-			if (dwRetreived == (dwSize - 2))
+				dwRetrieved = GetPrivateProfileString(lpszSection, nullptr, nullptr, sectionEntriesBuffer.data(), dwSize, m_sIniFile.c_str());
+			if (dwRetrieved == (dwSize - 2))
 			{
 				//Realloc the array by doubling its size ready for the next loop around
 				dwSize *= 2;
 			}
-			else if (dwRetreived == 0)
+			else if (dwRetrieved == 0)
 			{
 				const DWORD dwError{ GetLastError() };
 
-				//Only consider it an error if no data was retreived and GetLastError flagged an error
+				//Only consider it an error if no data was retrieved and GetLastError flagged an error
 				if (dwError)
 					ThrowWin32AppSettingsException(dwError);
 				else
@@ -1524,9 +1516,8 @@ public:
 	void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes) override
 	{
 		//Allocate some heap memory for the data we will be writing out
-		std::vector<TCHAR> dataBuffer;
 #pragma warning(suppress: 26472)
-		dataBuffer.resize((static_cast<size_t>(dwBytes) * 2) + 1);
+		std::vector<TCHAR> dataBuffer{ (static_cast<size_t>(dwBytes) * 2) + 1, std::allocator<TCHAR>{} };
 
 		//convert the data to write out to string format
 		for (size_t i = 0; i < dwBytes; i++)
@@ -1545,25 +1536,24 @@ public:
 		WriteString(lpszSection, lpszEntry, dataBuffer.data());
 	}
 
-	void WriteStringArray(_In_opt_ LPCTSTR lpszSection, _In_opt_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array) override
+	void WriteStringArray(_In_opt_ LPCTSTR lpszSection, _In_opt_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr) override
 	{
 		//Work out the size of the buffer we will need
 		size_t nSize{ 0 };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 			nSize += (sText.length() + 1); //1 extra for each null terminator
 
 		  //Need one second null for the double null at the end
 		nSize++;
 
 		//Allocate the memory we want
-		std::vector<TCHAR> dataBuffer;
-		dataBuffer.resize(nSize);
+		std::vector<TCHAR> dataBuffer{ nSize, std::allocator<TCHAR>{} };
 
 		//Now copy the strings into the buffer
 		size_t nCurOffset{ 0 };
 #pragma warning(suppress: 26429)
 		LPTSTR lpszString{ dataBuffer.data() };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 		{
 			const auto nCurrentStringLength{ sText.length() };
 #pragma warning(suppress: 26481)
@@ -1596,8 +1586,7 @@ public:
 		nStringSize++; //Include the final null terminator
 
 		//Allocate the memory we want
-		std::vector<TCHAR> keyValuesBuffer;
-		keyValuesBuffer.resize(nStringSize);
+		std::vector<TCHAR> keyValuesBuffer{ nStringSize, std::allocator<TCHAR>{} };
 
 		//Now copy the strings into the buffer
 		size_t nCurOffset{ 0 };
@@ -1723,7 +1712,7 @@ protected:
 };
 
 
-//The App settings class which reads / writes application setttings to an windows XML file
+//The App settings class which reads / writes application settings to an windows XML file
 class CXMLAppSettings : public IAppSettings
 {
 public:
@@ -1757,14 +1746,14 @@ public:
 	//Accessors / Mutators
 	void SetXMLFile(_In_ const String& sXMLFile)
 	{
-		//Flush the document to ensure that we do not have remants of the old document when we start with a new filename
+		//Flush the document to ensure that we do not have remnants of the old document when we start with a new filename
 		Flush();
 		m_XMLDOM.Release();
 
 		m_sXMLFile = sXMLFile;
 	}
 
-	String GetXMLFile() const
+	[[nodiscard]] String GetXMLFile() const
 	{
 		return m_sXMLFile;
 	}
@@ -1774,7 +1763,7 @@ public:
 		m_bWriteFlush = bWriteFlush;
 	}
 
-	bool GetWriteFlush() const noexcept
+	[[nodiscard]] bool GetWriteFlush() const noexcept
 	{
 		return m_bWriteFlush;
 	}
@@ -1806,16 +1795,13 @@ public:
 
 	std::vector<BYTE> GetBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry) override
 	{
-		//What will be the return value from this method
-		std::vector<BYTE> data;
-
 		String sBinary{ GetString(lpszSection, lpszEntry) };
 		const auto nLen{ sBinary.length() };
 		if (nLen == 0)
-			return data;
+			return std::vector<BYTE>{};
 		if (nLen % 2)
 			ThrowWin32AppSettingsException(ERROR_INVALID_DATA);
-		data.resize(nLen / 2);
+		std::vector<BYTE> data{ nLen / 2, std::allocator<BYTE>{} };
 		for (size_t i = 0; i < nLen; i += 2)
 		{
 #pragma warning(suppress: 26446 26472)
@@ -1826,14 +1812,12 @@ public:
 
 	std::vector<String> GetStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry) override
 	{
-		//What will be the return value from this method
-		std::vector<String> array;
-
 		//Try to get the binary data first
 		std::vector<BYTE> data{ GetBinary(lpszSection, lpszEntry) };
 		if (data.size() == 0)
-			return array;
+			return std::vector<String>{};
 
+		std::vector<String> arr;
 #pragma warning(suppress: 26490)
 		auto lpszStrings{ reinterpret_cast<LPTSTR>(data.data()) };
 		if (lpszStrings != nullptr)
@@ -1842,12 +1826,12 @@ public:
 			while (lpszStrings[0] != _T('\0'))
 			{
 #pragma warning(suppress: 26486)
-				array.emplace_back(lpszStrings);
+				arr.emplace_back(lpszStrings);
 #pragma warning(suppress: 26481 26486)
 				lpszStrings += (_tcslen(lpszStrings) + 1);
 			}
 		}
-		return array;
+		return arr;
 	}
 
 	std::vector<String> GetSections() override
@@ -1954,31 +1938,31 @@ public:
 
 	void WriteInt(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ int nValue) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteInt(lpszSection, lpszEntry, nValue, m_bWriteFlush);
 	}
 
 	void WriteString(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_z_ LPCTSTR lpszValue) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteString(lpszSection, lpszEntry, lpszValue, m_bWriteFlush);
 	}
 
 	void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteBinary(lpszSection, lpszEntry, pData, dwBytes, m_bWriteFlush);
 	}
 
-	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array) override
+	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
-		WriteStringArray(lpszSection, lpszEntry, array, m_bWriteFlush);
+		//Just delegate to the version which specifies the flush setting as a parameter
+		WriteStringArray(lpszSection, lpszEntry, arr, m_bWriteFlush);
 	}
 
 	void WriteSection(_In_opt_z_ LPCTSTR lpszSection, _In_ const std::vector<String>& sectionEntries) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteSection(lpszSection, sectionEntries, m_bWriteFlush);
 	}
 
@@ -2029,7 +2013,7 @@ public:
 			ATL::CComPtr<IXMLDOMNode> entryNode{ GetEntryNode(lpszSection, lpszEntry, false) };
 
 			//update the text of the entry node
-			HRESULT hr{ entryNode->put_text(ATL::CComBSTR(lpszValue)) };
+			const HRESULT hr{ entryNode->put_text(ATL::CComBSTR(lpszValue)) };
 			if (FAILED(hr))
 				ThrowCOMAppSettingsException(hr);
 
@@ -2044,9 +2028,8 @@ public:
 	void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes, _In_ bool bWriteFlush)
 	{
 		//Allocate some heap memory for the data we will be writing out
-		std::vector<TCHAR> dataBuffer;
 #pragma warning(suppress: 26472)
-		dataBuffer.resize((static_cast<size_t>(dwBytes) * 2) + 1);
+		std::vector<TCHAR> dataBuffer{ (static_cast<size_t>(dwBytes) * 2) + 1, std::allocator<TCHAR>{} };
 
 		//convert the data to write out to string format
 		for (size_t i = 0; i < dwBytes; i++)
@@ -2066,25 +2049,24 @@ public:
 		WriteString(lpszSection, lpszEntry, dataBuffer.data(), bWriteFlush);
 	}
 
-	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array, _In_ bool bWriteFlush)
+	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr, _In_ bool bWriteFlush)
 	{
 		//Work out the size of the buffer we will need
 		size_t nSize{ 0 };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 			nSize += (sText.length() + 1); //1 extra for each null terminator
 
 		  //Need one second null for the double null at the end
 		nSize++;
 
 		//Allocate the memory we want
-		std::vector<TCHAR> dataBuffer;
-		dataBuffer.resize(nSize);
+		std::vector<TCHAR> dataBuffer{ nSize, std::allocator<TCHAR>{} };
 
 		//Now copy the strings into the buffer
 		size_t nCurOffset{ 0 };
 #pragma warning(suppress: 26429)
 		LPTSTR lpszString{ dataBuffer.data() };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 		{
 			const auto nCurrentStringLength{ sText.length() };
 #pragma warning(suppress: 26481)
@@ -2146,7 +2128,7 @@ public:
 			if (m_bPrettyPrint)
 				PrettyPrint();
 
-			HRESULT hr{ m_XMLDOM->save(ATL::CComVariant{m_sXMLFile.c_str()}) };
+			const HRESULT hr{ m_XMLDOM->save(ATL::CComVariant{m_sXMLFile.c_str()}) };
 			if (FAILED(hr))
 				ThrowCOMAppSettingsException(hr);
 
@@ -2159,7 +2141,7 @@ protected:
 	ATL::CComPtr<IXMLDOMNode> GetDocumentNode(_In_ bool bReadOnly)
 	{
 		//Create and load the DOM
-		CreateDOMIfNeccessary(bReadOnly);
+		CreateDOMIfNecessary(bReadOnly);
 
 		//get the root XML node
 		ATL::CComPtr<IXMLDOMElement> documentElement;
@@ -2276,7 +2258,7 @@ protected:
 			return node;
 	}
 
-	void CreateDOMIfNeccessary(_In_ bool bFailIfNotPresent)
+	void CreateDOMIfNecessary(_In_ bool bFailIfNotPresent)
 	{
 		//If the DOM document does not exist, then create it
 		if (m_XMLDOM == nullptr)
@@ -2374,7 +2356,7 @@ protected:
 };
 
 
-//The App settings class which reads / writes application setttings to a JSON file
+//The App settings class which reads / writes application settings to a JSON file
 #ifdef CAPPSETTINGS_JSON_SUPPORT
 class CJSONAppSettings : public IAppSettings
 {
@@ -2408,7 +2390,7 @@ public:
 	//Accessors / Mutators
 	void SetJSONFile(_In_ const String& sJSONFile)
 	{
-		//Flush the document to ensure that we do not have remants of the old document when we start with a new filename
+		//Flush the document to ensure that we do not have remnants of the old document when we start with a new filename
 		Flush();
 		m_JSON.SetNull();
 
@@ -2477,16 +2459,13 @@ public:
 
 	std::vector<BYTE> GetBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry) override
 	{
-		//What will be the return value from this method
-		std::vector<BYTE> data;
-
 		String sBinary{ GetString(lpszSection, lpszEntry) };
 		const auto nLen{ sBinary.length() };
 		if (nLen == 0)
-			return data;
+			return std::vector<BYTE>{};
 		if (nLen % 2)
 			ThrowWin32AppSettingsException(ERROR_INVALID_DATA);
-		data.resize(nLen / 2);
+		std::vector<BYTE> data{ nLen / 2, std::allocator<BYTE>{} };
 		for (size_t i = 0; i < nLen; i += 2)
 #pragma warning(suppress: 26446 26472)
 			data[i / 2] = static_cast<BYTE>(((sBinary[i + 1] - 'A') << 4) + (sBinary[i] - 'A'));
@@ -2495,27 +2474,25 @@ public:
 
 	std::vector<String> GetStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry) override
 	{
-		//What will be the return value from this method
-		std::vector<String> array;
-
 		//Try to get the binary data first
 		std::vector<BYTE> data{ GetBinary(lpszSection, lpszEntry) };
 		if (data.size() == 0)
-			return array;
+			return std::vector<String>{};
 #pragma warning(suppress: 26490)
 		auto lpszStrings{ reinterpret_cast<LPTSTR>(data.data()) };
+		std::vector<String> arr;
 		if (lpszStrings != nullptr)
 		{
 #pragma warning(suppress: 26481 26489)
 			while (lpszStrings[0] != _T('\0'))
 			{
 #pragma warning(suppress: 26486)
-				array.emplace_back(lpszStrings);
+				arr.emplace_back(lpszStrings);
 #pragma warning(suppress: 26481 26486)
 				lpszStrings += (_tcslen(lpszStrings) + 1);
 			}
 		}
-		return array;
+		return arr;
 	}
 
 	std::vector<String> GetSections() override
@@ -2584,31 +2561,31 @@ public:
 
 	void WriteInt(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ int nValue) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteInt(lpszSection, lpszEntry, nValue, m_bWriteFlush);
 	}
 
 	void WriteString(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_z_ LPCTSTR lpszValue) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteString(lpszSection, lpszEntry, lpszValue, m_bWriteFlush);
 	}
 
 	void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteBinary(lpszSection, lpszEntry, pData, dwBytes, m_bWriteFlush);
 	}
 
-	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array) override
+	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
-		WriteStringArray(lpszSection, lpszEntry, array, m_bWriteFlush);
+		//Just delegate to the version which specifies the flush setting as a parameter
+		WriteStringArray(lpszSection, lpszEntry, arr, m_bWriteFlush);
 	}
 
 	void WriteSection(_In_opt_z_ LPCTSTR lpszSection, _In_ const std::vector<String>& sectionEntries) override
 	{
-		//Just delegate to the version which specfies the flush setting as a parameter
+		//Just delegate to the version which specifies the flush setting as a parameter
 		WriteSection(lpszSection, sectionEntries, m_bWriteFlush);
 	}
 
@@ -2702,9 +2679,8 @@ public:
 	void WriteBinary(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_opt_ const BYTE* pData, _In_ DWORD dwBytes, _In_ bool bWriteFlush)
 	{
 		//Allocate some temp memory for the data we will be writing out
-		std::vector<TCHAR> dataBuffer;
 #pragma warning(suppress: 26472)
-		dataBuffer.resize((static_cast<size_t>(dwBytes) * 2) + 1);
+		std::vector<TCHAR> dataBuffer{ (static_cast<size_t>(dwBytes) * 2) + 1, std::allocator<TCHAR>{} };
 
 		//convert the data to write out to string format
 		for (size_t i = 0; i < dwBytes; i++)
@@ -2724,25 +2700,24 @@ public:
 		WriteString(lpszSection, lpszEntry, dataBuffer.data(), bWriteFlush);
 	}
 
-	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& array, _In_ bool bWriteFlush)
+	void WriteStringArray(_In_opt_z_ LPCTSTR lpszSection, _In_opt_z_ LPCTSTR lpszEntry, _In_ const std::vector<String>& arr, _In_ bool bWriteFlush)
 	{
 		//Work out the size of the buffer we will need
 		size_t nSize{ 0 };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 			nSize += (sText.length() + 1); //1 extra for each null terminator
 
 		  //Need one second null for the double null at the end
 		nSize++;
 
 		//Allocate the memory we want
-		std::vector<TCHAR> dataBuffer;
-		dataBuffer.resize(nSize);
+		std::vector<TCHAR> dataBuffer{ nSize, std::allocator<TCHAR>{} };
 
 		//Now copy the strings into the buffer
 		size_t nCurOffset{ 0 };
 #pragma warning(suppress: 26429)
 		LPTSTR lpszString{ dataBuffer.data() };
-		for (const auto& sText : array)
+		for (const auto& sText : arr)
 		{
 			const auto nCurrentStringLength{ sText.length() };
 #pragma warning(suppress: 26481)
@@ -2816,8 +2791,8 @@ protected:
 		int nUTF8Length{ WideCharToMultiByte(CP_UTF8, 0, sJSON.c_str(), -1, nullptr, 0, nullptr, nullptr) };
 
 		//Now recall with the buffer to get the converted text
-		std::string sUTF8String;
-		sUTF8String.resize(nUTF8Length);
+#pragma warning(suppress: 26472)
+		std::string sUTF8String{ static_cast<size_t>(nUTF8Length), _T('\0'), std::allocator<TCHAR>{} };
 		nUTF8Length = WideCharToMultiByte(CP_UTF8, 0, sJSON.c_str(), -1, sUTF8String.data(), nUTF8Length, nullptr, nullptr);
 		sUTF8String.resize(nUTF8Length);
 
@@ -2860,9 +2835,8 @@ protected:
 			return MAKE_HRESULT(SEVERITY_ERROR, FACILITY_WIN32, ERROR_FILE_TOO_LARGE);
 
 		//Allocate some memory for the contents of the file
-		std::vector<char> json;
 #pragma warning(suppress: 26472)
-		json.resize(static_cast<size_t>(nFileSize + 1));
+		std::vector<char> json{ static_cast<size_t>(nFileSize + 1) , std::allocator<char>{} };
 
 		//Read in the contents of the file
 		DWORD dwBytesWritten{ 0 };
@@ -2882,7 +2856,7 @@ protected:
 	JSONPP::Object& GetDocumentNode(_In_ bool bReadOnly)
 	{
 		//Create and load the JSON
-		CreateDOMIfNeccessary(bReadOnly);
+		CreateDOMIfNecessary(bReadOnly);
 
 		if (m_JSON.IsNull())
 		{
@@ -2966,7 +2940,7 @@ protected:
 			return iter->second;
 	}
 
-	void CreateDOMIfNeccessary(_In_ bool bFailIfNotPresent)
+	void CreateDOMIfNecessary(_In_ bool bFailIfNotPresent)
 	{
 		//If the JSON document does not exist, then create it
 		if (m_JSON.IsNull())
