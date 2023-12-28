@@ -159,7 +159,7 @@ bool InstallStartupApps(bool bInstallStartupApps)
 UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 {
 	const int nFileEvent = (IS_DELETE_FILE(faAction)) ? ID_FILE_DELETE : ID_FILE_UPLOAD;
-	const std::wstring strFilePath = fiObject.GetFilePath();
+	const std::wstring strFilePath = fiObject.GetFilePath().GetBuffer();
 	AddNewItem(nFileEvent, strFilePath, lpData);
 
 	return 0; // success
@@ -377,7 +377,7 @@ bool DownloadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 			}
 		}
 		pBinaryFile.Close();
-		g_strCurrentDocument.empty();
+		g_strCurrentDocument.clear();
 	}
 	catch (CFileException* pException)
 	{

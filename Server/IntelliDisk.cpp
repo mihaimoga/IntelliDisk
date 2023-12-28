@@ -52,11 +52,11 @@ int wmain(int argc, wchar_t *argv[])
 			// Install the service when the command is 
 			// "-install" or "/install".
 			InstallService(
-				SERVICE_NAME,               // Name of service
-				SERVICE_DISPLAY_NAME,       // Name to display
+				(PWSTR)SERVICE_NAME,               // Name of service
+				(PWSTR)SERVICE_DISPLAY_NAME,       // Name to display
 				SERVICE_START_TYPE,         // Service start type
-				SERVICE_DEPENDENCIES,       // Dependencies
-				SERVICE_ACCOUNT,            // Service running account
+				(PWSTR)SERVICE_DEPENDENCIES,       // Dependencies
+				(PWSTR)SERVICE_ACCOUNT,            // Service running account
 				SERVICE_PASSWORD            // Password of the account
 			);
 		}
@@ -64,7 +64,7 @@ int wmain(int argc, wchar_t *argv[])
 		{
 			// Uninstall the service when the command is 
 			// "-remove" or "/remove".
-			UninstallService(SERVICE_NAME);
+			UninstallService((PWSTR)SERVICE_NAME);
 		}
 	}
 	else
@@ -73,7 +73,7 @@ int wmain(int argc, wchar_t *argv[])
 		wprintf(L" -install  to install the service.\n");
 		wprintf(L" -remove   to remove the service.\n");
 
-		CServiceBase service(SERVICE_NAME);
+		CServiceBase service((PWSTR)SERVICE_NAME);
 		if (!CServiceBase::Run(service))
 		{
 			wprintf(L"Service failed to run w/err 0x%08lx\n", GetLastError());

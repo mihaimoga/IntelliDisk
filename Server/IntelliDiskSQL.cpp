@@ -322,7 +322,7 @@ public:
 				break;
 			TRACE(_T("m_nBase64 = %lld\n"), m_nBase64);
 			std::string decoded = base64_decode(wstring_to_utf8(m_lpszContent));
-			ASSERT(m_nBase64 == decoded.length());
+			ASSERT((size_t)m_nBase64 == decoded.length());
 			if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)decoded.data(), (int)decoded.length(), false, false))
 			{
 				pSHA256.update((unsigned char*)decoded.data(), decoded.length());
