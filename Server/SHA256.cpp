@@ -37,7 +37,7 @@ SHA256::SHA256() : m_blocklen(0), m_bitlen(0) {
 	m_state[7] = 0x5be0cd19;
 }
 
-void SHA256::update(const uint8_t * data, size_t length) {
+void SHA256::update(const uint8_t* data, size_t length) {
 	for (size_t i = 0; i < length; i++) {
 		m_data[m_blocklen++] = data[i];
 		if (m_blocklen == 64) {
@@ -50,12 +50,12 @@ void SHA256::update(const uint8_t * data, size_t length) {
 	}
 }
 
-void SHA256::update(const std::string &data) {
+void SHA256::update(const std::string& data) {
 	update(reinterpret_cast<const uint8_t*> (data.c_str()), data.size());
 }
 
-uint8_t * SHA256::digest() {
-	uint8_t * hash = new uint8_t[32];
+std::array<uint8_t, 32> SHA256::digest() {
+	std::array<uint8_t, 32> hash;
 
 	pad();
 	revert(hash);
@@ -143,18 +143,18 @@ void SHA256::pad() {
 
 	// Append to the padding the total message's length in bits and transform.
 	m_bitlen += m_blocklen * 8;
-	m_data[63] = (uint8_t)(m_bitlen);
-	m_data[62] = (uint8_t)(m_bitlen >> 8);
-	m_data[61] = (uint8_t)(m_bitlen >> 16);
-	m_data[60] = (uint8_t)(m_bitlen >> 24);
-	m_data[59] = (uint8_t)(m_bitlen >> 32);
-	m_data[58] = (uint8_t)(m_bitlen >> 40);
-	m_data[57] = (uint8_t)(m_bitlen >> 48);
-	m_data[56] = (uint8_t)(m_bitlen >> 56);
+	m_data[63] = static_cast<uint8_t>(m_bitlen);
+	m_data[62] = static_cast<uint8_t>(m_bitlen >> 8);
+	m_data[61] = static_cast<uint8_t>(m_bitlen >> 16);
+	m_data[60] = static_cast<uint8_t>(m_bitlen >> 24);
+	m_data[59] = static_cast<uint8_t>(m_bitlen >> 32);
+	m_data[58] = static_cast<uint8_t>(m_bitlen >> 40);
+	m_data[57] = static_cast<uint8_t>(m_bitlen >> 48);
+	m_data[56] = static_cast<uint8_t>(m_bitlen >> 56);
 	transform();
 }
 
-void SHA256::revert(uint8_t * hash) {
+void SHA256::revert(std::array<uint8_t, 32>& hash) {
 	// SHA uses big endian byte ordering
 	// Revert all bytes
 	for (uint8_t i = 0; i < 4; i++) {
@@ -164,7 +164,7 @@ void SHA256::revert(uint8_t * hash) {
 	}
 }
 
-std::string SHA256::toString(const uint8_t * digest) {
+std::string SHA256::toString(const std::array<uint8_t, 32>& digest) {
 	std::stringstream s;
 	s << std::setfill('0') << std::hex;
 
