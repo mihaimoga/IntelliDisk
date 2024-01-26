@@ -172,7 +172,7 @@ to maintain a single distribution point for the source code.
 //The struct which we put into the MMF
 struct CWindowInstance
 {
-  unsigned __int64 hMainWnd;
+	unsigned __int64 hMainWnd;
 };
 
 
@@ -273,7 +273,7 @@ _Return_type_success_(return != false) bool CInstanceChecker::CreateExecuteMutex
 	return true;
 }
 
-_Return_type_success_(return != false) bool CInstanceChecker::FindPreviousHWND(_Out_ HWND& hPrevWnd)
+_Return_type_success_(return != false) bool CInstanceChecker::FindPreviousHWND(_Out_ HWND & hPrevWnd)
 {
 	//Validate our parameters
 #pragma warning(suppress: 26477)
