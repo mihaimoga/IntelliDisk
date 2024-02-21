@@ -107,17 +107,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
+	// enable Visual Studio 2005 style docking window behavior
+	CDockingManager::SetDockingMode(DT_SMART);
+	// enable Visual Studio 2005 style docking window auto-hide behavior
+	EnableAutoHidePanes(CBRS_ALIGN_ANY);
+
+	// set the visual manager used to draw all user interface elements
+	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+
 	m_wndRibbonBar.Create(this);
 	m_wndRibbonBar.LoadFromResource(IDR_RIBBON);
 
 	m_MainButton = new CMFCRibbonApplicationButton;
 	m_MainButton->SetVisible(FALSE);
 	m_wndRibbonBar.SetApplicationButton(m_MainButton, CSize());
-
-	// enable Visual Studio 2005 style docking window behavior
-	CDockingManager::SetDockingMode(DT_SMART);
-	// enable Visual Studio 2005 style docking window auto-hide behavior
-	EnableAutoHidePanes(CBRS_ALIGN_ANY);
 
 	if (!m_pTrayIcon.Create(this, IDR_TRAYPOPUP, _T("IntelliDisk"), m_hMainFrameIcon, WM_TRAYNOTIFY))
 	{

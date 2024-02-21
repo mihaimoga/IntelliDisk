@@ -249,8 +249,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE" />
+    <None Include="ReleaseNotes.html" />
     <None Include="res\IntelliDisk.rc2" />
     <None Include="res\ribbon.mfcribbon-ms" />
+    <None Include="SoftwareContextRegister.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
