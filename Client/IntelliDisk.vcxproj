@@ -248,7 +248,10 @@
     <Image Include="res\writesmall.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\CODE_OF_CONDUCT.md" />
+    <None Include="..\CONTRIBUTING.md" />
     <None Include="..\LICENSE" />
+    <None Include="..\README.md" />
     <None Include="ReleaseNotes.html" />
     <None Include="res\IntelliDisk.rc2" />
     <None Include="res\ribbon.mfcribbon-ms" />

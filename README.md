@@ -1,6 +1,6 @@
 ![IntelliDisk.png](IntelliDisk.png)
 
-[IntelliDisk](https://www.emvs.site/intellidisk/) is an alternative Windows version to the famous Microsoft OneDrive!
+[IntelliDisk](https://www.moga.doctor/#intellidisk-top) is an alternative Windows version to the famous Microsoft OneDrive!
 
 This application is developed in Microsoft Visual C++, and it is licensed under GNU General Public License v3.0.
 
