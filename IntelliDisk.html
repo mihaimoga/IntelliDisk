@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>IntelliDisk - Help</title>
+        <link rel="icon" type="image/png" href="https://www.moga.doctor/romania-flag-square-icon-256.png">
+        <link rel="apple-touch-icon" href="https://www.moga.doctor/romania-flag-square-icon-256.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="https://www.moga.doctor/#intellidisk-top" target="_blank">IntelliDisk</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://github.com/mihaimoga/IntelliDisk/graphs/contributors" target="_blank">Contributors</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://github.com/mihaimoga/IntelliDisk/issues" target="_blank">Issues</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://github.com/mihaimoga/IntelliDisk/discussions" target="_blank">Discussions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://github.com/mihaimoga/IntelliDisk/wiki" target="_blank">Wiki</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row divide-md">
+                <div class="col-md-12 col-sm-12 divide-md text-justify" style="text-align: justify;">
+                    <h1 class="text-center">IntelliDisk</h1>
+                    <p class="text-center"><img class="img-thumbnail" src="IntelliDisk.png" alt="IntelliDisk"></p>
+
+                    <h2>Introduction</h2>
+                    <p><em>IntelliDisk</em> is a free (as in “free speech” and also as in “free beer”) distributed storage solution. Running in the MS Windows environment, its use is governed by <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GNU General Public License v3.0</a>. <em>IntelliDisk</em> is written in C++ and uses pure Win32 API and STL which ensures a higher execution speed and smaller program size. By optimizing as many routines as possible without losing user friendliness, <em>IntelliDisk</em> is trying to reduce the world carbon dioxide emissions. When using less CPU power, the PC can throttle down and reduce power consumption, resulting in a greener environment. I hope you enjoy <em>IntelliDisk</em> as much as I enjoy coding it!</p>
+                    <p><em>IntelliDisk</em> application allows users to save files across multiple devices, and have them automatically sync on these devices. This means someone can access and work on the same document in multiple locations. <em>IntelliDisk</em> application provides relatively easy access to cloud storage space, allowing options to share content with others. <em>IntelliDisk</em> application is free as in free speech/free beer. It is developed as a client-server architecture, which separates application into two logical and physical computing tiers.</p>
+
+                    <h3>What is client-server application?</h3>
+                    <p>A client-server application is a program that runs on the client-side while accessing the information over a remote server. The client-server always makes requests to the remote server by calling functions of the server to retrieve information. The client program and the server program may run on different systems and on different platforms where they require a communications layer known as middleware.</p>
+                    <p>The client-server application might run on a network client or a network server. The applications are solely described on their architecture except for the fact that how it is deployed on the network. It uses a two-tier architecture that has two users; the client and the server.</p>
+                    <p>The server machine acts as a host that can run single or multiple server programs that share their resources with the clients. Sometimes the server gets overloaded when simultaneous requests are received from the client.</p>
+                    <p>The communication between the client and server is a two-way street. Servers can reach the client to make sure that the client has appropriate updates, patches, or if there are any other requirements. Once the inquiry is done, the server closes the connection to the client so that the bandwidth space and the network are conserved.</p>
+
+                    <h3>Features of client-server application</h3>
+                    <p>Some of the typical features of client-server applications are as follows:</p>
+                    <ul>
+                        <li>Multiple client programs have the ability to request services from a single server;</li>
+                        <li>A single client program can request services from multiple server programs;</li>
+                        <li>A single server program has the ability to provide multiple services;</li>
+                        <li>The client program doesn’t have to be aware of the number of subprograms that provide a service;</li>
+                        <li>Multiple subprograms have the ability to work together to provide a service;</li>
+                        <li>The server programs run on a machine that is remote from the machine that runs the client program.</li>
+                    </ul>
+
+                    <h2>Getting started</h2>
+                    <h3>Install IntelliDisk using the installer</h3>
+                    <ul>
+                        <li>Download the installer</li>
+                        <li>Run the executable binary and follow the installation flow</li>
+                    </ul>
+                    <p>The installer will likely require Administrative privileges in order to install <em>IntelliDisk</em> (and later, to update <em>IntelliDisk</em> or install or update plugins, or anything else that requires writing to the installation directory). If you do not have Administrative privileges, you either need to tell the installer to use a location where you do have write permission (though that may still ask for Administrator privileges), or you may choose not use the installer and instead run a portable edition from a directory where you have write permission.</p>
+                    <h3>Install IntelliDisk from zip</h3>
+                    <p>These instructions will allow you to run a portable or mini-portable (also called “minimalist”), without requiring administrative privileges.</p>
+                    <ul>
+                        <li>Create a new folder somewhere that you have write-permission</li>
+                        <li>Unzip the content into the new folder</li>
+                        <li>Run <em>IntelliDisk</em> from the new folder</li>
+                    </ul>
+                    <p>For all the portable editions, everything (the application, settings, and plugins) is stored in one folder hierarchy. And by default, the portable editions do not mess with operating system settings (so no file associations or Edit with <em>IntelliDisk</em> context-menu entries) – if you want such with a portable edition, you will have to set it up manually.</p>
+                    <p>The portable zip edition contain all the themes, user defined languages, auto-completions, localizations, and default plugins and Plugins Admin tool that come with the installed version of <em>IntelliDisk</em>.</p>
+                    <p>The portable zip edition of <em>IntelliDisk</em> can be removed by deleting the directory they came in. If you manually set up file associations or context-menu entries in the OS, it is your responsibility to remove them yourself.</p>
+
+                    <h2>Setup of this application</h2>
+                    <ul>
+                        <li>Install  <a href="https://dev.mysql.com/downloads/connector/odbc/" target="_blank">MySQL ODBC connector</a>;</li>
+                        <li>Choose a MySQL hosting service and create the MySQL database;</li>
+                        <li>Configure Server instance (create `IntelliDisk.xml` configuration file):<br>
+                            <img class="img-thumbnail" src="IntelliDisk-MySQL.png" alt="IntelliDisk-MySQL"><br>
+                            <pre lang="xml">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-16&quot; standalone=&quot;no&quot;?&gt;
+&lt;xml&gt;
+    &lt;IntelliDisk&gt;
+        &lt;ServicePort&gt;8080&lt;/ServicePort&gt;
+        &lt;HostName&gt;localhost&lt;/HostName&gt;
+        &lt;HostPort&gt;3306&lt;/HostPort&gt;
+        &lt;Database&gt;MySQL_database&lt;/Database&gt;
+        &lt;Username&gt;MySQL_username&lt;/Username&gt;
+        &lt;Password&gt;MySQL_password&lt;/Password&gt;
+    &lt;/IntelliDisk&gt;
+&lt;/xml&gt;</pre></li>
+                        <li>Configure Client instance (change Servers's IP &amp; Port):<br>
+                            <img class="img-thumbnail" src="IntelliDisk-Settings.png" alt="IntelliDisk-Settings"></li>
+                    </ul>
+                    <p><em>Note: you should check the option &quot;Start IntelliDisk automatically when I sign in to Windows&quot;.</em></p>
+
+                    <h2>Create and Submit your Pull Request</h2>
+                    <p>As noted in the <a href="https://github.com/mihaimoga/IntelliDisk/blob/main/CONTRIBUTING.md" target="_blank">Contributing Rules</a> for <em>IntelliDisk</em>, all Pull Requests need to be attached to a issue on GitHub. So the first step is to create an issue which requests that the functionality be improved (if it was already there) or added (if it was not yet there); in your issue, be sure to explain that you have the functionality definition ready, and will be submitting a Pull Request. The second step is to use the GitHub interface to create the Pull Request from your fork into the main repository. The final step is to wait for and respond to feedback from the developers as needed, until such time as your PR is accepted or rejected.</p>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    </body>
+</html>

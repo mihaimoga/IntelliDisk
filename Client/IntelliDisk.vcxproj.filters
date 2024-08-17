@@ -159,6 +159,9 @@
     <Image Include="res\writesmall.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\IntelliDisk.png" />
+    <Image Include="..\IntelliDisk-MySQL.png" />
+    <Image Include="..\IntelliDisk-Settings.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ribbon.mfcribbon-ms">
@@ -173,5 +176,7 @@
     <None Include="..\CODE_OF_CONDUCT.md" />
     <None Include="..\CONTRIBUTING.md" />
     <None Include="..\README.md" />
+    <None Include="..\IntelliDisk.html" />
+    <None Include="..\IntelliDisk.sql" />
   </ItemGroup>
 </Project>

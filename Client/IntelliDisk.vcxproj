@@ -232,6 +232,9 @@
     <ResourceCompile Include="IntelliDisk.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\IntelliDisk-MySQL.png" />
+    <Image Include="..\IntelliDisk-Settings.png" />
+    <Image Include="..\IntelliDisk.png" />
     <Image Include="res\buttons.bmp" />
     <Image Include="res\buttons.png" />
     <Image Include="res\filelarge.bmp" />
@@ -250,6 +253,8 @@
   <ItemGroup>
     <None Include="..\CODE_OF_CONDUCT.md" />
     <None Include="..\CONTRIBUTING.md" />
+    <None Include="..\IntelliDisk.html" />
+    <None Include="..\IntelliDisk.sql" />
     <None Include="..\LICENSE" />
     <None Include="..\README.md" />
     <None Include="ReleaseNotes.html" />

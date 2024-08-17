@@ -27,6 +27,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_37084BB1E4624477A2A53D418B5BE68A"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_51BA2E1C4078494B82435AAE539324E0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -39,13 +45,31 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_B72D48D1C0B4440686952806A6DDACD6"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_BD55A311AB5D4A21A3BD96071F48BC5B"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
+        "MsmKey" = "8:_C943ADF6A3AB496A96045F8C3A3DDF43"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_CAB984763D114031871FF6D33BF7EB25"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F106C3266B3E4A93BDA5FC3269262A73"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -182,10 +206,90 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_37084BB1E4624477A2A53D418B5BE68A"
+            {
+            "SourcePath" = "8:..\\IntelliDisk-MySQL.png"
+            "TargetName" = "8:IntelliDisk-MySQL.png"
+            "Tag" = "8:"
+            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B72D48D1C0B4440686952806A6DDACD6"
+            {
+            "SourcePath" = "8:..\\IntelliDisk-Settings.png"
+            "TargetName" = "8:IntelliDisk-Settings.png"
+            "Tag" = "8:"
+            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C943ADF6A3AB496A96045F8C3A3DDF43"
+            {
+            "SourcePath" = "8:..\\IntelliDisk.html"
+            "TargetName" = "8:IntelliDisk.html"
+            "Tag" = "8:"
+            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CAB984763D114031871FF6D33BF7EB25"
             {
             "SourcePath" = "8:..\\LICENSE"
             "TargetName" = "8:LICENSE"
+            "Tag" = "8:"
+            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F106C3266B3E4A93BDA5FC3269262A73"
+            {
+            "SourcePath" = "8:..\\IntelliDisk.png"
+            "TargetName" = "8:IntelliDisk.png"
             "Tag" = "8:"
             "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
             "Condition" = "8:"
