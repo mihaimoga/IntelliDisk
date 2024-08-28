@@ -1,5 +1,6 @@
 /* Copyright (C) 2022-2024 Stefan-Mihai MOGA
 This file is part of IntelliDisk application developed by Stefan-Mihai MOGA.
+IntelliDisk is an alternative Windows version to the famous Microsoft OneDrive!
 
 IntelliDisk is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Open
