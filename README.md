@@ -1,14 +1,16 @@
 ![IntelliDisk.png](IntelliDisk.png)
 
-[IntelliDisk](https://www.moga.doctor/#intellidisk-top) is an alternative Windows version to the famous Microsoft OneDrive!
+Download:
+- [IntelliDiskSetup.msi](https://www.moga.doctor/freeware/IntelliDiskSetup.msi)
+- [IntelliDisk.zip](https://www.moga.doctor/freeware/IntelliDisk.zip)
 
-This application is developed in Microsoft Visual C++, and it is licensed under GNU General Public License v3.0.
+## Introduction
 
-This open source application has a Setup project to be deployed on Microsoft Windows 10+ machines.
+_IntelliDisk_ is a free (as in “free speech” and also as in “free beer”) distributed storage solution. Running in the MS Windows environment, its use is governed by [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). _IntelliDisk_ is written in C++ and uses pure Win32 API and STL which ensures a higher execution speed and smaller program size. By optimizing as many routines as possible without losing user friendliness, _IntelliDisk_ is trying to reduce the world carbon dioxide emissions. When using less CPU power, the PC can throttle down and reduce power consumption, resulting in a greener environment. I hope you enjoy _IntelliDisk_ as much as I enjoy coding it!
 
-Contributions are welcome. Be mindful of our [Contribution Rules](CONTRIBUTING.md) to increase the likelihood of your contribution getting accepted.
+_IntelliDisk_ application allows users to save files across multiple devices, and have them automatically sync on these devices. This means someone can access and work on the same document in multiple locations. _IntelliDisk_ application provides relatively easy access to cloud storage space, allowing options to share content with others. _IntelliDisk_ application is free as in free speech/free beer. It is developed as a client-server architecture, which separates application into two logical and physical computing tiers.
 
-# What is client-server application?
+### What is client-server application?
 
 A client-server application is a program that runs on the client-side while accessing the information over a remote server. The client-server always makes requests to the remote server by calling functions of the server to retrieve information. The client program and the server program may run on different systems and on different platforms where they require a communications layer known as middleware.
 
@@ -18,9 +20,10 @@ The server machine acts as a host that can run single or multiple server program
 
 The communication between the client and server is a two-way street. Servers can reach the client to make sure that the client has appropriate updates, patches, or if there are any other requirements. Once the inquiry is done, the server closes the connection to the client so that the bandwidth space and the network are conserved.
 
-## Features of client-server application
+### Features of client-server application
 
 Some of the typical features of client-server applications are as follows:
+
 - Multiple client programs have the ability to request services from a single server;
 - A single client program can request services from multiple server programs;
 - A single server program has the ability to provide multiple services;
@@ -28,9 +31,32 @@ Some of the typical features of client-server applications are as follows:
 - Multiple subprograms have the ability to work together to provide a service;
 - The server programs run on a machine that is remote from the machine that runs the client program.
 
-# Setup of this application
+## Getting started
 
-- Install  [MySQL ODBC connector](https://dev.mysql.com/downloads/connector/odbc/);
+### Install IntelliDisk using the installer
+
+- Download the installer
+- Run the executable binary and follow the installation flow
+
+The installer will likely require Administrative privileges in order to install _IntelliDisk_ (and later, to update _IntelliDisk_ or install or update plugins, or anything else that requires writing to the installation directory). If you do not have Administrative privileges, you either need to tell the installer to use a location where you do have write permission (though that may still ask for Administrator privileges), or you may choose not use the installer and instead run a portable edition from a directory where you have write permission.
+
+### Install IntelliDisk from zip
+
+These instructions will allow you to run a portable or mini-portable (also called “minimalist”), without requiring administrative privileges.
+
+- Create a new folder somewhere that you have write-permission
+- Unzip the content into the new folder
+- Run _IntelliDisk_ from the new folder
+
+For all the portable editions, everything (the application, settings, and plugins) is stored in one folder hierarchy. And by default, the portable editions do not mess with operating system settings (so no file associations or Edit with _IntelliDisk_ context-menu entries) – if you want such with a portable edition, you will have to set it up manually.
+
+The portable zip edition contain all the themes, user defined languages, auto-completions, localizations, and default plugins and Plugins Admin tool that come with the installed version of _IntelliDisk_.
+
+The portable zip edition of _IntelliDisk_ can be removed by deleting the directory they came in. If you manually set up file associations or context-menu entries in the OS, it is your responsibility to remove them yourself.
+
+## Setup of this application
+
+- Install [MySQL ODBC connector](https://dev.mysql.com/downloads/connector/odbc/);
 - Choose a MySQL hosting service and create the MySQL database;
 - Configure Server instance (create `IntelliDisk.xml` configuration file):
 ![IntelliDisk-MySQL.png](IntelliDisk-MySQL.png)
@@ -44,10 +70,14 @@ Some of the typical features of client-server applications are as follows:
         <Database>MySQL_database</Database>
         <Username>MySQL_username</Username>
         <Password>MySQL_password</Password>
-    </IntelliDisk>
+        </IntelliDisk>
 </xml>
 ```
 - Configure Client instance (change Servers's IP & Port):
 ![IntelliDisk-Settings.png](IntelliDisk-Settings.png)
 
 _Note: you should check the option "Start IntelliDisk automatically when I sign in to Windows"._
+
+## Create and Submit your Pull Request
+
+As noted in the [Contributing Rules](https://github.com/mihaimoga/IntelliDisk/blob/main/CONTRIBUTING.md) for _IntelliDisk_, all Pull Requests need to be attached to a issue on GitHub. So the first step is to create an issue which requests that the functionality be improved (if it was already there) or added (if it was not yet there); in your issue, be sure to explain that you have the functionality definition ready, and will be submitting a Pull Request. The second step is to use the GitHub interface to create the Pull Request from your fork into the main repository. The final step is to wait for and respond to feedback from the developers as needed, until such time as your PR is accepted or rejected.
