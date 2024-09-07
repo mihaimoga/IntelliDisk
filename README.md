@@ -77,3 +77,19 @@ _Note: you should check the option "Start IntelliDisk automatically when I sign 
 ## Create and Submit your Pull Request
 
 As noted in the [Contributing Rules](https://github.com/mihaimoga/IntelliDisk/blob/main/CONTRIBUTING.md) for _IntelliDisk_, all Pull Requests need to be attached to a issue on GitHub. So the first step is to create an issue which requests that the functionality be improved (if it was already there) or added (if it was not yet there); in your issue, be sure to explain that you have the functionality definition ready, and will be submitting a Pull Request. The second step is to use the GitHub interface to create the Pull Request from your fork into the main repository. The final step is to wait for and respond to feedback from the developers as needed, until such time as your PR is accepted or rejected.
+
+## Acknowledges
+
+This open source project uses the following libraries:
+
+- PJ Naughter's [IAppSettings](https://www.naughter.com/appsettings.html)
+- René Nyffenegger's [base64](https://github.com/ReneNyffenegger/cpp-base64)
+- jukov's [CFileInformation, CNotifyDirCheck](https://www.codeproject.com/Articles/4692/How-to-get-a-notification-if-change-occurs-in-a-sp)
+- [genUp4win](https://github.com/mihaimoga/genUp4win)
+- PJ Naughter's [CHLinkCtrl](https://www.naughter.com/hlinkctrl.html)
+- PJ Naughter's [CInstanceChecker](https://www.naughter.com/sinstance.html)
+- PJ Naughter's [ODBCWrappers](https://www.naughter.com/odbcwrappers.html)
+- SystemGlitch's [SHA256](https://github.com/System-Glitch/SHA256)
+- PJ Naughter's [CTrayNotifyIcon](https://www.naughter.com/ntray.html)
+- PJ Naughter's [CVersionInfo](https://www.naughter.com/versioninfo.html)
+- PJ Naughter's [CWSocket](https://www.naughter.com/w3mfc.html)

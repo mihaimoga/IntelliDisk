@@ -35,51 +35,55 @@
         </nav>
 
         <div class="container">
-            <h1>Release Notes</h1>
-                <p><strong>IntelliDisk</strong> is an alternative Windows version to the famous Microsoft OneDrive!</p>
-                <p>Download: <a href="https://www.moga.doctor/freeware/IntelliDiskSetup.msi">https://www.moga.doctor/freeware/IntelliDiskSetup.msi</a></p>
-                <p>GitHub repo: <a href="https://github.com/mihaimoga/IntelliDisk" target="_blank">https://github.com/mihaimoga/IntelliDisk</a></p>
-                <p>Article: <a href="https://www.codeproject.com/Articles/5364705/IntelliDisk" target="_blank">https://www.codeproject.com/Articles/5364705/IntelliDisk</a></p>
-            <h2>Social Media</h2>
-            <p>Please feel free to contact me if you need any further information.</p>
-            <ul>
-                <li><img class="img-responsive" src="https://www.moga.doctor/img/twitter.png" alt="Twitter">&nbsp;<a href="https://x.com/stefanmihaimoga" target="_blank">X/Twitter</a></li>
-                <li><img class="img-responsive" src="https://www.moga.doctor/img/linkedin.png" alt="LinkedIn">&nbsp;<a href="https://www.linkedin.com/in/stefanmihaimoga/" target="_blank">LinkedIn</a></li>
-                <li><img class="img-responsive" src="https://www.moga.doctor/img/facebook.png" alt="Facebook">&nbsp;<a href="https://www.facebook.com/stefanmihaimoga" target="_blank">Facebook</a></li>
-                <li><img class="img-responsive" src="https://www.moga.doctor/img/instagram.png" alt="Instagram">&nbsp;<a href="https://www.instagram.com/stefanmihaimoga/" target="_blank">Instagram</a></li>
-            </ul>
+            <div class="row divide-md">
+                <div class="col-md-12 col-sm-12 divide-md text-justify" style="text-align: justify;">
+                    <h1>Release Notes</h1>
+                        <p><strong>IntelliDisk</strong> is an alternative Windows version to the famous Microsoft OneDrive!</p>
+                        <p>Download: <a href="https://www.moga.doctor/freeware/IntelliDiskSetup.msi">https://www.moga.doctor/freeware/IntelliDiskSetup.msi</a></p>
+                        <p>GitHub repo: <a href="https://github.com/mihaimoga/IntelliDisk" target="_blank">https://github.com/mihaimoga/IntelliDisk</a></p>
+                        <p>Article: <a href="https://www.codeproject.com/Articles/5364705/IntelliDisk" target="_blank">https://www.codeproject.com/Articles/5364705/IntelliDisk</a></p>
+                    <h2>Social Media</h2>
+                    <p>Please feel free to contact me if you need any further information.</p>
+                    <ul>
+                        <li><img class="img-responsive" src="https://www.moga.doctor/img/twitter.png" alt="Twitter">&nbsp;<a href="https://x.com/stefanmihaimoga" target="_blank">X/Twitter</a></li>
+                        <li><img class="img-responsive" src="https://www.moga.doctor/img/linkedin.png" alt="LinkedIn">&nbsp;<a href="https://www.linkedin.com/in/stefanmihaimoga/" target="_blank">LinkedIn</a></li>
+                        <li><img class="img-responsive" src="https://www.moga.doctor/img/facebook.png" alt="Facebook">&nbsp;<a href="https://www.facebook.com/stefanmihaimoga" target="_blank">Facebook</a></li>
+                        <li><img class="img-responsive" src="https://www.moga.doctor/img/instagram.png" alt="Instagram">&nbsp;<a href="https://www.instagram.com/stefanmihaimoga/" target="_blank">Instagram</a></li>
+                    </ul>
 
-            <h2>History</h2>
-            <ul>
-                <li>Version 1.01 (July 14<sup>th</sup>, 2023): Initial release</li>
-                <li>Version 1.02 (August 20<sup>th</sup>, 2023):
+                    <h2>History</h2>
                     <ul>
-                        <li>Changed article's download link. Updated the About dialog (email &amp; website).</li>
-                        <li>Added social media links: Twitter, LinkedIn, Facebook, and Instagram.</li>
-                        <li>Added shortcuts to GitHub repository's Issues, Discussions, and Wiki.</li>
+                        <li>Version 1.01 (July 14<sup>th</sup>, 2023): Initial release</li>
+                        <li>Version 1.02 (August 20<sup>th</sup>, 2023):
+                            <ul>
+                                <li>Changed article's download link. Updated the About dialog (email &amp; website).</li>
+                                <li>Added social media links: Twitter, LinkedIn, Facebook, and Instagram.</li>
+                                <li>Added shortcuts to GitHub repository's Issues, Discussions, and Wiki.</li>
+                            </ul>
+                        </li>
+                        <li>Version 1.03 (November 5<sup>th</sup>, 2023):
+                            <ul>
+                                <li>Updated PJ Naughter's <code>CTrayNotifyIcon</code> library to the latest version available. <blockquote>Fixed an issue where the <code>CTrayNotifyIcon::OnTrayNotification</code> callback method would not work correctly if the <code>m_NotifyIconData.uTimeout</code> member variable gets updated during runtime of client applications. This can occur when you call <code>CTrayNotifyIcon::SetBalloonDetails</code>. Thanks to Maisala Tuomo for reporting this bug.</blockquote></li>
+                                <li>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available. <blockquote>Optimized construction of various <code>std::vector</code> and <code>std::[w]string</code> instances throughout the codebase.</blockquote></li>
+                            </ul>
+                        </li>
+                        <li>Version 1.04 (December 17<sup>th</sup>, 2023): Updated PJ Naughter's <code>ODBCWrappers</code> library to the latest version available. <blockquote>Updated module to remove usage of _if_exists by now using ODBCVER and _ATL_MODULES preprocessor macro checks along with SFINAE.</blockquote></li>
+                        <li>Version 1.05 (January 1<sup>st</sup>, 2024):
+                            <ul>
+                                <li>Switched to Visual Studio Enterprise 2022 (some changes were made in the source code).</li>
+                                <li>Added setup project for this solution!</li>
+                            </ul>
+                        </li>
+                        <li>Version 1.06 (January 13<sup>th</sup>, 2024):
+                            <ul>
+                                <li>Added LICENSE to installation folder.</li><li>Updated Jérémy LAMBERT's <code>SHA256</code> library to the latest version available. <blockquote>Make digest() return a std::array - this way, memory management is automatic, and the compiler can more easily detect out-of-bounds reads or writes.</blockquote></li>
+                            </ul>
+                        </li>
+                        <li>Version 1.07 (January 26<sup>th</sup>, 2024): Added ReleaseNotes.html and SoftwareContentRegister.html to GitHub repo.</li>
+                        <li>Version 1.08 (February 21<sup>st</sup>, 2024): Switched MFC application' theme back to native Windows.</li>
                     </ul>
-                </li>
-                <li>Version 1.03 (November 5<sup>th</sup>, 2023):
-                    <ul>
-                        <li>Updated PJ Naughter's <code>CTrayNotifyIcon</code> library to the latest version available. <blockquote>Fixed an issue where the <code>CTrayNotifyIcon::OnTrayNotification</code> callback method would not work correctly if the <code>m_NotifyIconData.uTimeout</code> member variable gets updated during runtime of client applications. This can occur when you call <code>CTrayNotifyIcon::SetBalloonDetails</code>. Thanks to Maisala Tuomo for reporting this bug.</blockquote></li>
-                        <li>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available. <blockquote>Optimized construction of various <code>std::vector</code> and <code>std::[w]string</code> instances throughout the codebase.</blockquote></li>
-                    </ul>
-                </li>
-                <li>Version 1.04 (December 17<sup>th</sup>, 2023): Updated PJ Naughter's <code>ODBCWrappers</code> library to the latest version available. <blockquote>Updated module to remove usage of _if_exists by now using ODBCVER and _ATL_MODULES preprocessor macro checks along with SFINAE.</blockquote></li>
-                <li>Version 1.05 (January 1<sup>st</sup>, 2024):
-                    <ul>
-                        <li>Switched to Visual Studio Enterprise 2022 (some changes were made in the source code).</li>
-                        <li>Added setup project for this solution!</li>
-                    </ul>
-                </li>
-                <li>Version 1.06 (January 13<sup>th</sup>, 2024):
-                    <ul>
-                        <li>Added LICENSE to installation folder.</li><li>Updated Jérémy LAMBERT's <code>SHA256</code> library to the latest version available. <blockquote>Make digest() return a std::array - this way, memory management is automatic, and the compiler can more easily detect out-of-bounds reads or writes.</blockquote></li>
-                    </ul>
-                </li>
-                <li>Version 1.07 (January 26<sup>th</sup>, 2024): Added ReleaseNotes.html and SoftwareContentRegister.html to GitHub repo.</li>
-                <li>Version 1.08 (February 21<sup>st</sup>, 2024): Switched MFC application' theme back to native Windows.</li>
-            </ul>
+                </div>
+            </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     </body>
