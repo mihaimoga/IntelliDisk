@@ -25,4 +25,8 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 // add headers that you want to pre-compile here
 #include "framework.h"
 
+#define INSTALLER_URL _T("https://www.moga.doctor/freeware/IntelliDiskSetup.msi")
+#define APPLICATION_URL _T("https://www.moga.doctor/freeware/IntelliDisk.xml")
+#define USER_MANUAL_URL _T("https://www.moga.doctor/freeware/IntelliDisk.html")
+
 #endif //PCH_H

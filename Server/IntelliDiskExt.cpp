@@ -39,7 +39,7 @@ constexpr auto NOTIFY_FILE_SIZE = 0x10000;
 
 constexpr auto  MAX_SOCKET_CONNECTIONS = 0x10000;
 
-bool bThreadRunning = false;
+bool g_bServerRunning = false;
 CWSocket g_pServerSocket;
 int g_nSocketCount = 0;
 CWSocket g_pClientSocket[MAX_SOCKET_CONNECTIONS];
@@ -304,7 +304,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 
 	g_bIsConnected[nSocketIndex] = false;
 
-	while (bThreadRunning)
+	while (g_bServerRunning)
 	{
 		try
 		{
@@ -418,7 +418,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 			}
 			else
 			{
-				if (!bThreadRunning)
+				if (!g_bServerRunning)
 				{
 					const std::string strCommand = "Restart";
 					nLength = (int)strCommand.length() + 1;
@@ -520,12 +520,12 @@ DWORD WINAPI CreateDatabase(LPVOID lpParam)
 		g_pServerSocket.CreateAndBind(g_nServicePort, SOCK_STREAM, AF_INET);
 		if (g_pServerSocket.IsCreated())
 		{
-			bThreadRunning = true;
+			g_bServerRunning = true;
 			g_pServerSocket.Listen(MAX_SOCKET_CONNECTIONS);
-			while (bThreadRunning)
+			while (g_bServerRunning)
 			{
 				g_pServerSocket.Accept(g_pClientSocket[g_nSocketCount]);
-				if (bThreadRunning)
+				if (g_bServerRunning)
 				{
 					const int nSocketIndex = g_nSocketCount;
 					g_hThreadArray[g_nThreadCount] = CreateThread(nullptr, 0, IntelliDiskThread, (int*)&nSocketIndex, 0, &m_dwThreadID[g_nThreadCount]);
@@ -567,9 +567,9 @@ void StopProcessingThread()
 	try
 	{
 		TRACE(_T("StopProcessingThread()\n"));
-		if (bThreadRunning)
+		if (g_bServerRunning)
 		{
-			bThreadRunning = false;
+			g_bServerRunning = false;
 			pClosingSocket.CreateAndConnect(IntelliDiskIP, g_nServicePort);
 			WaitForMultipleObjects(g_nThreadCount, g_hThreadArray, TRUE, INFINITE);
 			pClosingSocket.Close();

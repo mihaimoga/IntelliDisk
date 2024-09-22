@@ -30,6 +30,8 @@
 #define PNG_WRITESMALL                  314
 #define IDR_TRAYPOPUP                   315
 #define IDD_SETTINGS_DIALOG             316
+#define IDD_WebBrowserDlg               317
+#define IDD_CheckForUpdatesDlg          318
 #define IDC_VERSION                     1000
 #define IDC_WARNING                     1001
 #define IDC_WEBSITE                     1002
@@ -42,6 +44,9 @@
 #define IDC_STARTUP_APPS                1008
 #define IDC_CONTRIBUTORS                1009
 #define ID_MFCLISTCTRL                  1010
+#define IDC_CUSTOM_CONTROL              1011
+#define IDC_STATUS                      1012
+#define IDC_PROGRESS                    1013
 #define ID_WRITE_PASTEASHYPERLINK       32770
 #define ID_SHOW_APPLICATION             32771
 #define ID_HIDE_APPLICATION             32772
@@ -55,14 +60,16 @@
 #define IDC_ISSUES                      32780
 #define IDC_DISCUSSIONS                 32781
 #define IDC_WIKI                        32782
+#define IDC_USER_MANUAL                 32783
+#define IDC_CHECK_FOR_UPDATES           32784
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        318
-#define _APS_NEXT_COMMAND_VALUE         32783
-#define _APS_NEXT_CONTROL_VALUE         1011
+#define _APS_NEXT_RESOURCE_VALUE        319
+#define _APS_NEXT_COMMAND_VALUE         32785
+#define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           317
 #endif
 #endif

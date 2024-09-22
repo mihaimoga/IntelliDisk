@@ -169,7 +169,7 @@ UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 
 const int MAX_BUFFER = 0x10000;
 int g_nPingCount = 0;
-bool g_bThreadRunning = true;
+bool g_bClientRunning = true;
 bool g_bIsConnected = false;
 
 const char HEX_MAP[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -461,7 +461,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 	CWSocket& pApplicationSocket = pMainFrame->m_pApplicationSocket;
 	HANDLE& hSocketMutex = pMainFrame->m_hSocketMutex;
 
-	while (g_bThreadRunning)
+	while (g_bClientRunning)
 	{
 		try
 		{
@@ -584,7 +584,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 
 	CWSocket& pApplicationSocket = pMainFrame->m_pApplicationSocket;
 
-	while (g_bThreadRunning)
+	while (g_bClientRunning)
 	{
 		WaitForSingleObject(hOccupiedSemaphore, INFINITE);
 		WaitForSingleObject(hResourceMutex, INFINITE);
@@ -598,7 +598,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 		if (ID_STOP_PROCESS == nFileEvent)
 		{
 			TRACE(_T("Stopping...\n"));
-			g_bThreadRunning = false;
+			g_bClientRunning = false;
 		}
 		else if (ID_FILE_DOWNLOAD == nFileEvent)
 		{
@@ -625,7 +625,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 		ReleaseSemaphore(hResourceMutex, 1, nullptr);
 		ReleaseSemaphore(hEmptySemaphore, 1, nullptr);
 
-		while (g_bThreadRunning && !g_bIsConnected);
+		while (g_bClientRunning && !g_bIsConnected);
 
 		WaitForSingleObject(hSocketMutex, INFINITE);
 

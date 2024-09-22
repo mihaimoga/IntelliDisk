@@ -9,6 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IntelliDisk", "..\Client\In
 	ProjectSection(ProjectDependencies) = postProject
 		{3D4A80DD-075F-48EB-A44B-47D1150D3EE2} = {3D4A80DD-075F-48EB-A44B-47D1150D3EE2}
 		{6FCC50A7-0196-4076-AF28-978168FEC1A5} = {6FCC50A7-0196-4076-AF28-978168FEC1A5}
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7} = {B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IntelliHost", "..\Server\IntelliHost.vcxproj", "{3D4A80DD-075F-48EB-A44B-47D1150D3EE2}"
@@ -17,6 +18,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IntelliHost", "..\Server\In
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickTest", "..\Server\Test\QuickTest.vcxproj", "{6FCC50A7-0196-4076-AF28-978168FEC1A5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "genUp4win", "..\genUp4win\genUp4win.vcxproj", "{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,6 +61,14 @@ Global
 		{6FCC50A7-0196-4076-AF28-978168FEC1A5}.Release|x64.Build.0 = Release|x64
 		{6FCC50A7-0196-4076-AF28-978168FEC1A5}.Release|x86.ActiveCfg = Release|Win32
 		{6FCC50A7-0196-4076-AF28-978168FEC1A5}.Release|x86.Build.0 = Release|Win32
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Debug|x64.ActiveCfg = Debug|x64
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Debug|x64.Build.0 = Debug|x64
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Debug|x86.ActiveCfg = Debug|Win32
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Debug|x86.Build.0 = Debug|Win32
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Release|x64.ActiveCfg = Release|x64
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Release|x64.Build.0 = Release|x64
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Release|x86.ActiveCfg = Release|Win32
+		{B404DF9B-63E6-4D23-8116-A0C28B9DA2A7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
