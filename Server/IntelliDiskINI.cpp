@@ -22,12 +22,12 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 const std::wstring GetAppSettingsFilePath()
 {
-	TCHAR lpszModuleFilePath[_MAX_PATH];
+	TCHAR lpszModuleFilePath[0x1000 /* _MAX_PATH */];
 	TCHAR lpszDrive[_MAX_DRIVE];
 	TCHAR lpszDirectory[_MAX_DIR];
 	TCHAR lpszFilename[_MAX_FNAME];
 	TCHAR lpszExtension[_MAX_EXT];
-	TCHAR lpszFullPath[_MAX_PATH];
+	TCHAR lpszFullPath[0x1000 /* _MAX_PATH */];
 
 	WCHAR* lpszSpecialFolderPath = nullptr;
 	if ((SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &lpszSpecialFolderPath)) == S_OK)
@@ -38,9 +38,9 @@ const std::wstring GetAppSettingsFilePath()
 		return result;
 	}
 
-	VERIFY(0 != GetModuleFileName(NULL, lpszModuleFilePath, _MAX_PATH));
+	VERIFY(0 != GetModuleFileName(NULL, lpszModuleFilePath, 0x1000 /* _MAX_PATH */));
 	VERIFY(0 == _tsplitpath_s(AfxGetApp()->m_pszHelpFilePath, lpszDrive, _MAX_DRIVE, lpszDirectory, _MAX_DIR, lpszFilename, _MAX_FNAME, lpszExtension, _MAX_EXT));
-	VERIFY(0 == _tmakepath_s(lpszFullPath, _MAX_PATH, lpszDrive, lpszDirectory, _T("IntelliDisk"), _T(".xml")));
+	VERIFY(0 == _tmakepath_s(lpszFullPath, 0x1000 /* _MAX_PATH */, lpszDrive, lpszDirectory, _T("IntelliDisk"), _T(".xml")));
 	return lpszFullPath;
 }
 
