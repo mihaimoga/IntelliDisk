@@ -20,15 +20,38 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
+CString GetModuleFileName(_Inout_opt_ DWORD* pdwLastError = nullptr)
+{
+	CString strModuleFileName;
+	DWORD dwSize{ _MAX_PATH };
+	while (true)
+	{
+		TCHAR* pszModuleFileName{ strModuleFileName.GetBuffer(dwSize) };
+		const DWORD dwResult{ ::GetModuleFileName(nullptr, pszModuleFileName, dwSize) };
+		if (dwResult == 0)
+		{
+			if (pdwLastError != nullptr)
+				*pdwLastError = GetLastError();
+			strModuleFileName.ReleaseBuffer(0);
+			return CString{};
+		}
+		else if (dwResult < dwSize)
+		{
+			if (pdwLastError != nullptr)
+				*pdwLastError = ERROR_SUCCESS;
+			strModuleFileName.ReleaseBuffer(dwResult);
+			return strModuleFileName;
+		}
+		else if (dwResult == dwSize)
+		{
+			strModuleFileName.ReleaseBuffer(0);
+			dwSize *= 2;
+		}
+	}
+}
+
 const std::wstring GetAppSettingsFilePath()
 {
-	TCHAR lpszModuleFilePath[0x1000 /* _MAX_PATH */];
-	TCHAR lpszDrive[_MAX_DRIVE];
-	TCHAR lpszDirectory[_MAX_DIR];
-	TCHAR lpszFilename[_MAX_FNAME];
-	TCHAR lpszExtension[_MAX_EXT];
-	TCHAR lpszFullPath[0x1000 /* _MAX_PATH */];
-
 	WCHAR* lpszSpecialFolderPath = nullptr;
 	if ((SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &lpszSpecialFolderPath)) == S_OK)
 	{
@@ -38,10 +61,12 @@ const std::wstring GetAppSettingsFilePath()
 		return result;
 	}
 
-	VERIFY(0 != GetModuleFileName(NULL, lpszModuleFilePath, 0x1000 /* _MAX_PATH */));
-	VERIFY(0 == _tsplitpath_s(AfxGetApp()->m_pszHelpFilePath, lpszDrive, _MAX_DRIVE, lpszDirectory, _MAX_DIR, lpszFilename, _MAX_FNAME, lpszExtension, _MAX_EXT));
-	VERIFY(0 == _tmakepath_s(lpszFullPath, 0x1000 /* _MAX_PATH */, lpszDrive, lpszDirectory, _T("IntelliDisk"), _T(".xml")));
-	return lpszFullPath;
+	CString strFilePath{ GetModuleFileName() };
+	std::filesystem::path strFullPath{ strFilePath.GetString() };
+	strFullPath.replace_filename(_T("IntelliDisk"));
+	strFullPath.replace_extension(_T(".xml"));
+	OutputDebugString(strFullPath.c_str());
+	return strFullPath.c_str();
 }
 
 #include "AppSettings.h"
