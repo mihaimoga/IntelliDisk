@@ -1135,8 +1135,8 @@ void CFileInformation::RemoveDir(CString dir)
 	TCHAR           *strFindFiles = new TCHAR[MAX_PATH];
 
 	memset(strFindFiles, 0, MAX_PATH);
-	_tcscpy(strFindFiles, dir.GetBuffer(dir.GetLength()));
-	_tcscat(strFindFiles, _T("\\*.*"));
+	_tcscpy_s(strFindFiles, MAX_PATH, dir.GetBuffer(dir.GetLength()));
+	_tcscat_s(strFindFiles, MAX_PATH, _T("\\*.*"));
 
 	hndle = FindFirstFile(strFindFiles, &find);
 
@@ -1145,9 +1145,9 @@ void CFileInformation::RemoveDir(CString dir)
 		TCHAR *strFolderItem = new TCHAR[MAX_PATH];
 
 		memset(strFolderItem, 0, MAX_PATH);
-		_tcscpy(strFolderItem, dir.GetBuffer(dir.GetLength()));
-		_tcscat(strFolderItem, _T("\\"));
-		_tcscat(strFolderItem, find.cFileName);
+		_tcscpy_s(strFolderItem, MAX_PATH, dir.GetBuffer(dir.GetLength()));
+		_tcscat_s(strFolderItem, MAX_PATH, _T("\\"));
+		_tcscat_s(strFolderItem, MAX_PATH, find.cFileName);
 
 		if ((!_tcscmp(find.cFileName, _T("."))) ||
 			(!_tcscmp(find.cFileName, _T(".."))))
@@ -1284,17 +1284,19 @@ UINT CFileInformation::GetPathLevel(CString path)
 
 CString CFileInformation::GenerateNewFileName(CString path)
 {
+	errno_t err = 0;
 	CString newPath = path;
-	FILE*   pFile = _tfopen(newPath, _T("r"));
+	FILE* pFile = nullptr;
+	err = _tfopen_s(&pFile, newPath, _T("r"));
 
-	while (pFile != nullptr)
+	while ((0 == err) && (pFile != nullptr))
 	{
 		fclose(pFile);
 
 		CFileInformation fi(newPath);
 		newPath = fi.GetFileDir() + _T("\\_") + fi.GetFileName();
 
-		pFile = _tfopen(newPath, _T("r"));
+		err = _tfopen_s(&pFile, newPath, _T("r"));
 	}
 
 	return newPath;

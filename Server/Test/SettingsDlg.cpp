@@ -112,7 +112,7 @@ bool CheckIfDatabaseConnected(const std::wstring& strHostName, const std::wstrin
 	nRet = pConnection.Create(pEnvironment);
 	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
 
-	_stprintf(sConnectionInString, _T("Driver={MySQL ODBC 8.0 Unicode Driver};Server=%s;Port=%s;Database=%s;User=%s;Password=%s;"),
+	_stprintf_s(sConnectionInString, _countof(sConnectionInString), _T("Driver={MySQL ODBC 8.0 Unicode Driver};Server=%s;Port=%s;Database=%s;User=%s;Password=%s;"),
 		strHostName.c_str(), strHostPort.c_str(), strDatabase.c_str(), strUsername.c_str(), strPassword.c_str());
 	nRet = pConnection.DriverConnect(const_cast<SQLTCHAR*>(reinterpret_cast<const SQLTCHAR*>(sConnectionInString)), sConnectionOutString);
 	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
