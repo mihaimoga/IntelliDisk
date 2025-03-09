@@ -19,8 +19,6 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
 #endif
 
-// #define _CRT_SECURE_NO_WARNINGS
-
 #include "targetver.h"
 
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
