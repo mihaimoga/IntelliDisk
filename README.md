@@ -66,7 +66,7 @@ The portable zip edition of _IntelliDisk_ can be removed by deleting the directo
         <Database>MySQL_database</Database>
         <Username>MySQL_username</Username>
         <Password>MySQL_password</Password>
-        </IntelliDisk>
+    </IntelliDisk>
 </xml>
 ```
 - Configure Client instance (change Servers's IP & Port):
