@@ -21,10 +21,18 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "CheckForUpdatesDlg.h"
 
 #include "../genUp4win/genUp4win.h"
+#if _WIN64
 #ifdef _DEBUG
 #pragma comment(lib, "../Setup/x64/Debug/genUp4win.lib")
 #else
 #pragma comment(lib, "../Setup/x64/Release/genUp4win.lib")
+#endif
+#else
+#ifdef _DEBUG
+#pragma comment(lib, "../Setup/Debug/genUp4win.lib")
+#else
+#pragma comment(lib, "../Setup/Release/genUp4win.lib")
+#endif
 #endif
 
 // CCheckForUpdatesDlg dialog
