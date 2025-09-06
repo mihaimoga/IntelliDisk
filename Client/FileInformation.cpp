@@ -1154,7 +1154,7 @@ void CFileInformation::RemoveDir(CString dir)
 		{
 			RemoveDirectory(strFolderItem);
 
-			delete strFolderItem;
+			delete []strFolderItem;
 			strFolderItem = nullptr;
 
 			if (FindNextFile(hndle, &find))
@@ -1178,7 +1178,7 @@ void CFileInformation::RemoveDir(CString dir)
 			DeleteFile(strFolderItem);
 		}
 
-		delete strFolderItem;
+		delete []strFolderItem;
 		strFolderItem = nullptr;
 
 		if (FindNextFile(hndle, &find))
@@ -1191,7 +1191,7 @@ void CFileInformation::RemoveDir(CString dir)
 		}
 	}
 
-	delete strFindFiles;
+	delete []strFindFiles;
 	strFindFiles = nullptr;
 
 	FindClose(hndle);

@@ -14,9 +14,9 @@ You should have received a copy of the GNU General Public License along with
 IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "pch.h"
-#include "IntelliDiskSQL.h"
 #include "IntelliDiskExt.h"
 #include "IntelliDiskINI.h"
+#include "IntelliDiskSQL.h"
 #include "SHA256.h"
 #include "base64.h"
 
@@ -24,10 +24,12 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
-class CFilenameInsertAccessor // sets the data for inserting one row intro FILENAME table
+/**
+ * @brief ODBC accessor for inserting a row into the `filename` table.
+ */
+class CFilenameInsertAccessor
 {
 public:
-	// Parameter values
 	TCHAR m_lpszFilepath[4000];
 	__int64 m_nFilesize;
 
@@ -39,48 +41,40 @@ public:
 
 	DEFINE_ODBC_COMMAND(CFilenameInsertAccessor, _T("INSERT INTO `filename` (`filepath`, `filesize`) VALUES (?, ?);"))
 
-		// You may wish to call this function if you are inserting a record and wish to
-		// initialize all the fields, if you are not going to explicitly set all of them.
-		void ClearRecord() noexcept
-	{
-		memset(this, 0, sizeof(*this));
-	}
+		void ClearRecord() noexcept { memset(this, 0, sizeof(*this)); }
 };
 
-class CFilenameInsert : public CODBC::CAccessor<CFilenameInsertAccessor> // execute INSERT statement for FILENAME table; no output returned
+/**
+ * @brief Executes an INSERT for the `filename` table.
+ */
+class CFilenameInsert : public CODBC::CAccessor<CFilenameInsertAccessor>
 {
 public:
-	// Methods
 	bool Execute(CODBC::CConnection& pDbConnect, const std::wstring& lpszFilepath, const __int64& nFilesize)
 	{
 		ClearRecord();
-		// Create the statement object
 		CODBC::CStatement statement;
 		SQLRETURN nRet = statement.Create(pDbConnect);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Prepare the statement
 		nRet = statement.Prepare(GetDefaultCommand());
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Bind the parameters
 #pragma warning(suppress: 26485)
 		_tcscpy_s(m_lpszFilepath, _countof(m_lpszFilepath), lpszFilepath.c_str());
 		m_nFilesize = nFilesize;
 		nRet = BindParameters(statement);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Execute the statement
 		nRet = statement.Execute();
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
 		return true;
 	}
 };
 
-class CFilenameSelectAccessor // sets the data for selecting one row intro FILENAME table
+/**
+ * @brief ODBC accessor for selecting a row from the `filename` table.
+ */
+class CFilenameSelectAccessor
 {
 public:
-	// Parameter values
 	TCHAR m_lpszFilepath[4000];
 
 	BEGIN_ODBC_PARAM_MAP(CFilenameSelectAccessor)
@@ -90,47 +84,39 @@ public:
 
 	DEFINE_ODBC_COMMAND(CFilenameSelectAccessor, _T("SET @last_filename_id = (SELECT `filename_id` FROM `filename` WHERE `filepath` = ?);"))
 
-		// You may wish to call this function if you are inserting a record and wish to
-		// initialize all the fields, if you are not going to explicitly set all of them.
-		void ClearRecord() noexcept
-	{
-		memset(this, 0, sizeof(*this));
-	}
+		void ClearRecord() noexcept { memset(this, 0, sizeof(*this)); }
 };
 
-class CFilenameSelect : public CODBC::CAccessor<CFilenameSelectAccessor> // execute SELECT statement for FILENAME table; no output returned
+/**
+ * @brief Executes a SELECT for the `filename` table to set @last_filename_id.
+ */
+class CFilenameSelect : public CODBC::CAccessor<CFilenameSelectAccessor>
 {
 public:
-	// Methods
 	bool Execute(CODBC::CConnection& pDbConnect, const std::wstring& lpszFilepath)
 	{
 		ClearRecord();
-		// Create the statement object
 		CODBC::CStatement statement;
 		SQLRETURN nRet = statement.Create(pDbConnect);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Prepare the statement
 		nRet = statement.Prepare(GetDefaultCommand());
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Bind the parameters
 #pragma warning(suppress: 26485)
 		_tcscpy_s(m_lpszFilepath, _countof(m_lpszFilepath), lpszFilepath.c_str());
 		nRet = BindParameters(statement);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Execute the statement
 		nRet = statement.Execute();
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
 		return true;
 	}
 };
 
-class CFilenameUpdateAccessor // sets the data for updating one row intro FILENAME table
+/**
+ * @brief ODBC accessor for updating a row in the `filename` table.
+ */
+class CFilenameUpdateAccessor
 {
 public:
-	// Parameter values
 	__int64 m_nFilesize;
 
 	BEGIN_ODBC_PARAM_MAP(CFilenameUpdateAccessor)
@@ -140,47 +126,39 @@ public:
 
 	DEFINE_ODBC_COMMAND(CFilenameUpdateAccessor, _T("UPDATE `filename` SET `filesize` = ? WHERE `filename_id` = @last_filename_id;"))
 
-		// You may wish to call this function if you are inserting a record and wish to
-		// initialize all the fields, if you are not going to explicitly set all of them.
-		void ClearRecord() noexcept
-	{
-		memset(this, 0, sizeof(*this));
-	}
+		void ClearRecord() noexcept { memset(this, 0, sizeof(*this)); }
 };
 
-class CFilenameUpdate : public CODBC::CAccessor<CFilenameUpdateAccessor> // execute UPDATE statement for FILENAME table; no output returned
+/**
+ * @brief Executes an UPDATE for the `filename` table.
+ */
+class CFilenameUpdate : public CODBC::CAccessor<CFilenameUpdateAccessor>
 {
 public:
-	// Methods
 	bool Execute(CODBC::CConnection& pDbConnect, const __int64& nFilesize)
 	{
 		ClearRecord();
-		// Create the statement object
 		CODBC::CStatement statement;
 		SQLRETURN nRet = statement.Create(pDbConnect);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Prepare the statement
 		nRet = statement.Prepare(GetDefaultCommand());
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Bind the parameters
 #pragma warning(suppress: 26485)
 		m_nFilesize = nFilesize;
 		nRet = BindParameters(statement);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Execute the statement
 		nRet = statement.Execute();
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
 		return true;
 	}
 };
 
-class CFiledataInsertAccessor // sets the data for inserting one row intro FILENAME table
+/**
+ * @brief ODBC accessor for inserting a row into the `filedata` table.
+ */
+class CFiledataInsertAccessor
 {
 public:
-	// Parameter values
 	TCHAR m_lpszContent[0x20000];
 	__int64 m_nBase64;
 
@@ -192,48 +170,40 @@ public:
 
 	DEFINE_ODBC_COMMAND(CFiledataInsertAccessor, _T("INSERT INTO `filedata` (`filename_id`, `content`, `base64`) VALUES (@last_filename_id, ?, ?);"))
 
-		// You may wish to call this function if you are inserting a record and wish to
-		// initialize all the fields, if you are not going to explicitly set all of them.
-		void ClearRecord() noexcept
-	{
-		memset(this, 0, sizeof(*this));
-	}
+		void ClearRecord() noexcept { memset(this, 0, sizeof(*this)); }
 };
 
-class CFiledataInsert : public CODBC::CAccessor<CFiledataInsertAccessor> // execute INSERT statement for FILENAME table; no output returned
+/**
+ * @brief Executes an INSERT for the `filedata` table.
+ */
+class CFiledataInsert : public CODBC::CAccessor<CFiledataInsertAccessor>
 {
 public:
-	// Methods
 	bool Execute(CODBC::CConnection& pDbConnect, const std::wstring& lpszContent, const __int64& nBase64)
 	{
 		ClearRecord();
-		// Create the statement object
 		CODBC::CStatement statement;
 		SQLRETURN nRet = statement.Create(pDbConnect);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Prepare the statement
 		nRet = statement.Prepare(GetDefaultCommand());
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Bind the parameters
 #pragma warning(suppress: 26485)
 		_tcscpy_s(m_lpszContent, _countof(m_lpszContent), lpszContent.c_str());
 		m_nBase64 = nBase64;
 		nRet = BindParameters(statement);
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
-
-		// Execute the statement
 		nRet = statement.Execute();
 		ODBC_CHECK_RETURN_FALSE(nRet, statement);
 		return true;
 	}
 };
 
+/**
+ * @brief ODBC accessor for selecting the file size from the `filename` table.
+ */
 class CFilesizeSelectAccessor
 {
 public:
-	// Parameter values
 	__int64 m_nFilesize;
 
 	BEGIN_ODBC_PARAM_MAP(CFilesizeSelectAccessor)
@@ -245,27 +215,21 @@ public:
 
 	DEFINE_ODBC_COMMAND(CFilesizeSelectAccessor, _T("SELECT `filesize` FROM `filename` WHERE `filename_id` = @last_filename_id;"))
 
-		// You may wish to call this function if you are inserting a record and wish to
-		// initialize all the fields, if you are not going to explicitly set all of them.
-		void ClearRecord() noexcept
-	{
-		memset(this, 0, sizeof(*this));
-	}
+		void ClearRecord() noexcept { memset(this, 0, sizeof(*this)); }
 };
 
+/**
+ * @brief Executes a SELECT for the file size and returns it.
+ */
 class CFilesizeSelect : public CODBC::CCommand<CODBC::CAccessor<CFilesizeSelectAccessor>>
 {
 public:
-	// Methods
 	bool Iterate(const CODBC::CConnection& pDbConnect, ULONGLONG& nFileLength, _In_ bool bBind = true, _In_opt_ CODBC::SQL_ATTRIBUTE* pAttributes = nullptr, _In_ ULONG nAttributes = 0)
 	{
 		nFileLength = 0;
-		// Validate our parameters
 #pragma warning(suppress: 26477)
 		SQLRETURN nRet{ Open(pDbConnect, GetDefaultCommand(), bBind, pAttributes, nAttributes) };
 		ODBC_CHECK_RETURN_FALSE(nRet, m_Command);
-
-		// Iterate through the returned recordset
 		while (true)
 		{
 			ClearRecord();
@@ -274,15 +238,16 @@ public:
 				break;
 			nFileLength = m_nFilesize;
 		}
-
 		return true;
 	}
 };
 
+/**
+ * @brief ODBC accessor for selecting file data from the `filedata` table.
+ */
 class CFiledataSelectAccessor
 {
 public:
-	// Parameter values
 	TCHAR m_lpszContent[0x20000];
 	__int64 m_nBase64;
 
@@ -296,26 +261,20 @@ public:
 
 	DEFINE_ODBC_COMMAND(CFiledataSelectAccessor, _T("SELECT `content`, `base64` FROM `filedata` WHERE `filename_id` = @last_filename_id ORDER BY `filedata_id` ASC;"))
 
-		// You may wish to call this function if you are inserting a record and wish to
-		// initialize all the fields, if you are not going to explicitly set all of them.
-		void ClearRecord() noexcept
-	{
-		memset(this, 0, sizeof(*this));
-	}
+		void ClearRecord() noexcept { memset(this, 0, sizeof(*this)); }
 };
 
+/**
+ * @brief Executes a SELECT for file data and streams it to the client socket.
+ */
 class CFiledataSelect : public CODBC::CCommand<CODBC::CAccessor<CFiledataSelectAccessor>>
 {
 public:
-	// Methods
 	bool Iterate(const CODBC::CConnection& pDbConnect, const int nSocketIndex, CWSocket& pApplicationSocket, SHA256& pSHA256, _In_ bool bBind = true, _In_opt_ CODBC::SQL_ATTRIBUTE* pAttributes = nullptr, _In_ ULONG nAttributes = 0)
 	{
-		// Validate our parameters
 #pragma warning(suppress: 26477)
 		SQLRETURN nRet{ Open(pDbConnect, GetDefaultCommand(), bBind, pAttributes, nAttributes) };
 		ODBC_CHECK_RETURN_FALSE(nRet, m_Command);
-
-		// Iterate through the returned recordset
 		while (true)
 		{
 			ClearRecord();
@@ -334,13 +293,17 @@ public:
 				return false;
 			}
 		}
-
 		return true;
 	}
 };
 
 const int MAX_BUFFER = 0x10000;
 
+/**
+ * @brief Establishes a connection to the MySQL database using ODBC.
+ *        Loads connection settings from the application configuration.
+ * @return true on success, false on failure.
+ */
 bool ConnectToDatabase(CODBC::CEnvironment& pEnvironment, CODBC::CConnection& pConnection)
 {
 	CODBC::String sConnectionOutString;
@@ -364,9 +327,6 @@ bool ConnectToDatabase(CODBC::CEnvironment& pEnvironment, CODBC::CConnection& pC
 	nRet = pEnvironment.SetAttrU(SQL_ATTR_CONNECTION_POOLING, SQL_CP_DEFAULT);
 	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
 
-	// nRet = pEnvironment.SetAttr(SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-	// ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
-
 	nRet = pConnection.Create(pEnvironment);
 	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
 
@@ -378,6 +338,14 @@ bool ConnectToDatabase(CODBC::CEnvironment& pEnvironment, CODBC::CConnection& pC
 	return true;
 }
 
+/**
+ * @brief Handles the download of a file from the server to a client.
+ *        Streams file data from the database to the client socket, with SHA256 integrity check.
+ * @param nSocketIndex Index of the client socket.
+ * @param pApplicationSocket The socket to write to.
+ * @param strFilePath The file path to download.
+ * @return true on success, false on failure.
+ */
 bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	CODBC::CEnvironment pEnvironment;
@@ -436,6 +404,14 @@ bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const st
 	return true;
 }
 
+/**
+ * @brief Handles the upload of a file from a client to the server.
+ *        Receives file data from the client socket and stores it in the database, with SHA256 integrity check.
+ * @param nSocketIndex Index of the client socket.
+ * @param pApplicationSocket The socket to read from.
+ * @param strFilePath The file path to upload.
+ * @return true on success, false on failure.
+ */
 bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	CODBC::CEnvironment pEnvironment;
@@ -465,7 +441,7 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 		if (!pFilenameInsert.Execute(pConnection, strFilePath, nFileLength) ||
 			!pGenericStatement.Execute(pConnection, _T("SET @last_filename_id = LAST_INSERT_ID()")))
 		{
-			if (!pFilenameSelect.Execute(pConnection, strFilePath) || // need to UPDATE it not to INSERT it
+			if (!pFilenameSelect.Execute(pConnection, strFilePath) ||
 				!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filedata` WHERE `filename_id` = @last_filename_id")) ||
 				!pFilenameUpdate.Execute(pConnection, nFileLength))
 			{
@@ -484,7 +460,7 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 				nFileIndex += (nLength - 5);
 				pSHA256.update(&pFileBuffer[3], nLength - 5);
 
-				std::string encoded = base64_encode(reinterpret_cast<const unsigned char *>(&pFileBuffer[3]), nLength - 5);
+				std::string encoded = base64_encode(reinterpret_cast<const unsigned char*>(&pFileBuffer[3]), nLength - 5);
 				if (!pFiledataInsert.Execute(pConnection, utf8_to_wstring(encoded), nLength - 5))
 				{
 					TRACE("MySQL operation failed!\n");
@@ -519,6 +495,15 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 }
 
 #define EOT 0x04
+
+/**
+ * @brief Handles the deletion of a file from the server database.
+ *        Removes file data and metadata for the given file path.
+ * @param nSocketIndex Index of the client socket (unused).
+ * @param pApplicationSocket The socket to read EOT from.
+ * @param strFilePath The file path to delete.
+ * @return true on success, false on failure.
+ */
 bool DeleteFile(const int /*nSocketIndex*/, CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	CODBC::CEnvironment pEnvironment;

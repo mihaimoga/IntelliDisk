@@ -57,13 +57,13 @@ public:
 	HANDLE m_hSocketMutex;
 	int m_nNextIn;
 	int m_nNextOut;
-	NOTIFY_FILE_DATA m_pResourceArray[NOTIFY_FILE_SIZE];
-	HANDLE m_hProducerThread;
-	HANDLE m_hConsumerThread;
-	DWORD m_dwThreadID[2];
+	NOTIFY_FILE_DATA m_pResourceArray[NOTIFY_FILE_SIZE] = { 0, };
+	HANDLE m_hProducerThread = nullptr;
+	HANDLE m_hConsumerThread = nullptr;
+	DWORD m_dwThreadID[2] = { 0, };
 	CWSocket m_pApplicationSocket;
 	CString m_strServerIP;
-	int m_nServerPort;
+	int m_nServerPort = 0;
 
 // Operations
 public:

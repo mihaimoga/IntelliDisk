@@ -20,6 +20,11 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
+/**
+ * @brief Retrieves the full path of the current module (executable or DLL).
+ * @param pdwLastError Optional pointer to receive the last error code.
+ * @return The full path as a CString, or an empty string on failure.
+ */
 CString GetModuleFileName(_Inout_opt_ DWORD* pdwLastError = nullptr)
 {
 	CString strModuleFileName;
@@ -50,6 +55,11 @@ CString GetModuleFileName(_Inout_opt_ DWORD* pdwLastError = nullptr)
 	}
 }
 
+/**
+ * @brief Gets the full path to the IntelliDisk XML settings file.
+ *        Tries to use the user's profile directory, falls back to the executable's directory.
+ * @return The full path as a std::wstring.
+ */
 const std::wstring GetAppSettingsFilePath()
 {
 	WCHAR* lpszSpecialFolderPath = nullptr;
@@ -61,6 +71,7 @@ const std::wstring GetAppSettingsFilePath()
 		return result;
 	}
 
+	// Fallback: use the executable's directory
 	CString strFilePath{ GetModuleFileName() };
 	std::filesystem::path strFullPath{ strFilePath.GetString() };
 	strFullPath.replace_filename(_T("IntelliDisk"));
@@ -70,6 +81,11 @@ const std::wstring GetAppSettingsFilePath()
 }
 
 #include "AppSettings.h"
+
+/**
+ * @brief Loads the service port from the IntelliDisk XML settings file.
+ * @return The service port number, or the default IntelliDiskPort on error.
+ */
 const int LoadServicePort()
 {
 	int nServicePort = IntelliDiskPort;
@@ -92,6 +108,11 @@ const int LoadServicePort()
 	return nServicePort;
 }
 
+/**
+ * @brief Saves the service port to the IntelliDisk XML settings file.
+ * @param nServicePort The service port number to save.
+ * @return true on success, false on error.
+ */
 bool SaveServicePort(const int nServicePort)
 {
 	TRACE(_T("SaveServicePort\n"));
@@ -110,6 +131,15 @@ bool SaveServicePort(const int nServicePort)
 	return true;
 }
 
+/**
+ * @brief Loads database and server connection settings from the IntelliDisk XML file.
+ * @param strHostName [out] Host name for the database/server.
+ * @param nHostPort [out] Port number.
+ * @param strDatabase [out] Database name.
+ * @param strUsername [out] Username for authentication.
+ * @param strPassword [out] Password for authentication.
+ * @return true on success, false on error.
+ */
 bool LoadAppSettings(std::wstring& strHostName, int& nHostPort, std::wstring& strDatabase, std::wstring& strUsername, std::wstring& strPassword)
 {
 	// LoadServicePort() must be called before to do CoInitialize(nullptr)
@@ -137,6 +167,15 @@ bool LoadAppSettings(std::wstring& strHostName, int& nHostPort, std::wstring& st
 	return true;
 }
 
+/**
+ * @brief Saves database and server connection settings to the IntelliDisk XML file.
+ * @param strHostName Host name for the database/server.
+ * @param nHostPort Port number.
+ * @param strDatabase Database name.
+ * @param strUsername Username for authentication.
+ * @param strPassword Password for authentication.
+ * @return true on success, false on error.
+ */
 bool SaveAppSettings(const std::wstring& strHostName, const int nHostPort, const std::wstring& strDatabase, const std::wstring& strUsername, const std::wstring& strPassword)
 {
 	// LoadServicePort() must be called before to do CoInitialize(nullptr)

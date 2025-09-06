@@ -146,7 +146,13 @@ BOOL CIntelliDiskApp::InitInstance()
 		WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, nullptr,
 		nullptr);
 
-	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	if (FAILED(hr))
+	{
+		AfxMessageBox(_T("COM initialization failed."), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
 	// The one and only window has been initialized, so show and update it
 	pFrame->ShowWindow(SW_HIDE);
 	pFrame->UpdateWindow();
@@ -182,7 +188,7 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-// Implementation
+	// Implementation
 public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();

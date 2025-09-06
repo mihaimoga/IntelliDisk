@@ -14,7 +14,6 @@ You should have received a copy of the GNU General Public License along with
 IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 #include "pch.h"
-
 #include "IntelliDiskExt.h"
 #include "IntelliDiskINI.h"
 #include "IntelliDiskSQL.h"
@@ -23,6 +22,7 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
+// Protocol and event constants
 #define STX 0x02
 #define ETX 0x03
 #define EOT 0x04
@@ -36,17 +36,18 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define ID_FILE_DELETE 0x04
 
 constexpr auto NOTIFY_FILE_SIZE = 0x10000;
+constexpr auto MAX_SOCKET_CONNECTIONS = 0x10000;
 
-constexpr auto  MAX_SOCKET_CONNECTIONS = 0x10000;
-
+// Global server state and socket management
 bool g_bServerRunning = false;
 CWSocket g_pServerSocket;
 int g_nSocketCount = 0;
 CWSocket g_pClientSocket[MAX_SOCKET_CONNECTIONS];
 int g_nThreadCount = 0;
-DWORD m_dwThreadID[MAX_SOCKET_CONNECTIONS];
-HANDLE g_hThreadArray[MAX_SOCKET_CONNECTIONS];
+DWORD m_dwThreadID[MAX_SOCKET_CONNECTIONS] = { 0, };
+HANDLE g_hThreadArray[MAX_SOCKET_CONNECTIONS] = { nullptr, };
 
+// Notification queue structures for each client connection
 typedef struct {
 	int nFileEvent;
 	std::wstring strFilePath;
@@ -63,43 +64,38 @@ typedef struct {
 
 NOTIFY_FILE_ITEM* g_pThreadData[MAX_SOCKET_CONNECTIONS];
 
+// Database and authentication configuration
 std::wstring g_strHostName;
 int g_nHostPort = 3306;
 std::wstring g_strDatabase;
 std::wstring g_strUsername;
 std::wstring g_strPassword;
 
+/**
+ * @brief Converts a UTF-8 encoded std::string to std::wstring.
+ */
 std::wstring utf8_to_wstring(const std::string& string)
 {
 	if (string.empty())
-	{
 		return L"";
-	}
-
 	const auto size_needed = MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), nullptr, 0);
 	if (size_needed <= 0)
-	{
 		throw std::runtime_error("MultiByteToWideChar() failed: " + std::to_string(size_needed));
-	}
-
 	std::wstring result(size_needed, 0);
 	MultiByteToWideChar(CP_UTF8, 0, string.data(), (int)string.size(), result.data(), size_needed);
 	return result;
 }
 
+/**
+ * @brief Converts a std::wstring to a UTF-8 encoded std::string.
+ */
 std::string wstring_to_utf8(const std::wstring& wide_string)
 {
 	if (wide_string.empty())
-	{
 		return "";
-	}
-
 	const auto size_needed = WideCharToMultiByte(CP_UTF8, 0, wide_string.data(), (int)wide_string.size(), nullptr, 0, nullptr, nullptr);
 	if (size_needed <= 0)
-	{
 		throw std::runtime_error("WideCharToMultiByte() failed: " + std::to_string(size_needed));
-	}
-
 	std::string result(size_needed, 0);
 	WideCharToMultiByte(CP_UTF8, 0, wide_string.data(), (int)wide_string.size(), result.data(), size_needed, nullptr, nullptr);
 	return result;
@@ -108,25 +104,33 @@ std::string wstring_to_utf8(const std::wstring& wide_string)
 const int MAX_BUFFER = 0x10000;
 bool g_bIsConnected[MAX_SOCKET_CONNECTIONS];
 
+// Hexadecimal conversion helpers
 const char HEX_MAP[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+/**
+ * @brief Maps a nibble to its hexadecimal character.
+ */
 char replace(unsigned char c)
 {
 	return HEX_MAP[c & 0x0f];
 }
 
+/**
+ * @brief Converts a byte to a two-character hexadecimal string.
+ */
 std::string char_to_hex(unsigned char c)
 {
 	std::string hex;
-	// First four bytes
 	char left = (c >> 4);
-	// Second four bytes
 	char right = (c & 0x0f);
-
 	hex += replace(left);
 	hex += replace(right);
 	return hex;
 }
 
+/**
+ * @brief Dumps a buffer as a space-separated hexadecimal string.
+ */
 std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
 {
 	std::string result;
@@ -138,6 +142,16 @@ std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
 	return utf8_to_wstring(result);
 }
 
+/**
+ * @brief Reads a buffer from the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
+ * @param nSocketIndex Index of the client socket.
+ * @param pApplicationSocket The socket to read from.
+ * @param pBuffer Buffer to store received data.
+ * @param nLength [in/out] Length of buffer and received data.
+ * @param ReceiveENQ Whether to expect an ENQ handshake.
+ * @param ReceiveEOT Whether to expect an EOT handshake.
+ * @return true on successful read and protocol validation, false otherwise.
+ */
 bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT)
 {
 	int nIndex = 0;
@@ -201,6 +215,16 @@ bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned c
 	return (ACK == nReturn);
 }
 
+/**
+ * @brief Writes a buffer to the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
+ * @param nSocketIndex Index of the client socket.
+ * @param pApplicationSocket The socket to write to.
+ * @param pBuffer Buffer containing data to send.
+ * @param nLength Length of data to send.
+ * @param SendENQ Whether to send an ENQ handshake.
+ * @param SendEOT Whether to send an EOT handshake.
+ * @return true on successful write and protocol validation, false otherwise.
+ */
 bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT)
 {
 	int nCount = 0;
@@ -263,6 +287,12 @@ bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const uns
 	return (ACK == nReturn);
 }
 
+/**
+ * @brief Pushes a file event notification into the per-client queue.
+ * @param nSocketIndex Index of the client socket.
+ * @param nFileEvent The file event type (upload, download, delete, etc.).
+ * @param strFilePath The file path associated with the event.
+ */
 void PushNotification(const int& nSocketIndex, const int nFileEvent, const std::wstring& strFilePath)
 {
 	NOTIFY_FILE_ITEM* pThreadData = g_pThreadData[nSocketIndex];
@@ -284,6 +314,12 @@ void PushNotification(const int& nSocketIndex, const int nFileEvent, const std::
 	}
 }
 
+/**
+ * @brief Pops a file event notification from the per-client queue.
+ * @param nSocketIndex Index of the client socket.
+ * @param nFileEvent [out] The file event type.
+ * @param strFilePath [out] The file path associated with the event.
+ */
 void PopNotification(const int& nSocketIndex, int& nFileEvent, std::wstring& strFilePath)
 {
 	NOTIFY_FILE_ITEM* pThreadData = g_pThreadData[nSocketIndex];
@@ -305,6 +341,12 @@ void PopNotification(const int& nSocketIndex, int& nFileEvent, std::wstring& str
 	}
 }
 
+/**
+ * @brief Main thread function for handling a single IntelliDisk client connection.
+ *        Handles protocol, file commands, and notification queue for the client.
+ * @param lpParam Pointer to the socket index (int*).
+ * @return 0 on thread exit.
+ */
 DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 {
 	unsigned char pBuffer[MAX_BUFFER] = { 0, };
@@ -315,6 +357,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 	ASSERT(pApplicationSocket.IsCreated());
 	std::wstring strComputerID;
 
+	// Allocate and initialize per-thread notification queue
 	g_pThreadData[nSocketIndex] = new NOTIFY_FILE_ITEM;
 	ASSERT(g_pThreadData[nSocketIndex] != nullptr);
 	NOTIFY_FILE_ITEM* pThreadData = g_pThreadData[nSocketIndex];
@@ -440,6 +483,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 			}
 			else
 			{
+				// If server is stopping, notify client to restart
 				if (!g_bServerRunning)
 				{
 					const std::string strCommand = "Restart";
@@ -451,6 +495,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 				}
 				else
 				{
+					// Process queued notifications for this client
 					if (pThreadData->nNextIn != pThreadData->nNextOut)
 					{
 						int nFileEvent = 0;
@@ -502,24 +547,22 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 		}
 	}
 
+	// Cleanup per-thread resources
 	if (pThreadData->hResourceMutex != nullptr)
 	{
 		VERIFY(CloseHandle(pThreadData->hResourceMutex));
 		pThreadData->hResourceMutex = nullptr;
 	}
-
 	if (pThreadData->hEmptySemaphore != nullptr)
 	{
 		VERIFY(CloseHandle(pThreadData->hEmptySemaphore));
 		pThreadData->hEmptySemaphore = nullptr;
 	}
-
 	if (pThreadData->hOccupiedSemaphore != nullptr)
 	{
 		VERIFY(CloseHandle(pThreadData->hOccupiedSemaphore));
 		pThreadData->hOccupiedSemaphore = nullptr;
 	}
-
 	delete g_pThreadData[nSocketIndex];
 	g_pThreadData[nSocketIndex] = nullptr;
 
@@ -528,6 +571,11 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 }
 
 int g_nServicePort = IntelliDiskPort;
+
+/**
+ * @brief Main server thread for accepting client connections and launching handler threads.
+ *        Also loads configuration and binds the server socket.
+ */
 DWORD WINAPI CreateDatabase(LPVOID lpParam)
 {
 	UNREFERENCED_PARAMETER(lpParam);
@@ -575,6 +623,9 @@ DWORD WINAPI CreateDatabase(LPVOID lpParam)
 	return 0;
 }
 
+/**
+ * @brief Starts the main server processing thread.
+ */
 void StartProcessingThread()
 {
 	TRACE(_T("StartProcessingThread()\n"));
@@ -583,6 +634,9 @@ void StartProcessingThread()
 	g_nThreadCount++;
 }
 
+/**
+ * @brief Stops the server processing thread and closes all client sockets.
+ */
 void StopProcessingThread()
 {
 	CWSocket pClosingSocket;

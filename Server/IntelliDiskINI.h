@@ -18,13 +18,54 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #ifndef __INTELLIDISK_INI__
 #define __INTELLIDISK_INI__
 
+/**
+ * @brief Default IP address for the IntelliDisk server.
+ */
 #define IntelliDiskIP _T("127.0.0.1")
+
+ /**
+  * @brief Default port for the IntelliDisk service.
+  */
 #define IntelliDiskPort 8080
+
+  /**
+   * @brief XML section name for IntelliDisk settings.
+   */
 #define IntelliDiskSection _T("IntelliDisk")
 
+   /**
+	* @brief Loads the service port from the IntelliDisk XML settings file.
+	* @return The service port number, or the default IntelliDiskPort on error.
+	*/
 const int LoadServicePort();
+
+/**
+ * @brief Saves the service port to the IntelliDisk XML settings file.
+ * @param nServicePort The service port number to save.
+ * @return true on success, false on error.
+ */
 bool SaveServicePort(const int nServicePort);
+
+/**
+ * @brief Loads database and server connection settings from the IntelliDisk XML file.
+ * @param strHostName [out] Host name for the database/server.
+ * @param nHostPort [out] Port number.
+ * @param strDatabase [out] Database name.
+ * @param strUsername [out] Username for authentication.
+ * @param strPassword [out] Password for authentication.
+ * @return true on success, false on error.
+ */
 bool LoadAppSettings(std::wstring& strHostName, int& nHostPort, std::wstring& strDatabase, std::wstring& strUsername, std::wstring& strPassword);
+
+/**
+ * @brief Saves database and server connection settings to the IntelliDisk XML file.
+ * @param strHostName Host name for the database/server.
+ * @param nHostPort Port number.
+ * @param strDatabase Database name.
+ * @param strUsername Username for authentication.
+ * @param strPassword Password for authentication.
+ * @return true on success, false on error.
+ */
 bool SaveAppSettings(const std::wstring& strHostName, const int nHostPort, const std::wstring& strDatabase, const std::wstring& strUsername, const std::wstring& strPassword);
 
 #endif

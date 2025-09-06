@@ -28,6 +28,9 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
+/**
+ * Converts a UTF-8 encoded std::string to std::wstring.
+ */
 std::wstring utf8_to_wstring(const std::string& str)
 {
 	// convert UTF-8 string to wstring
@@ -35,6 +38,9 @@ std::wstring utf8_to_wstring(const std::string& str)
 	return myconv.from_bytes(str);
 }
 
+/**
+ * Converts a std::wstring to a UTF-8 encoded std::string.
+ */
 std::string wstring_to_utf8(const std::wstring& str)
 {
 	// convert wstring to UTF-8 string
@@ -42,6 +48,9 @@ std::string wstring_to_utf8(const std::wstring& str)
 	return myconv.to_bytes(str);
 }
 
+/**
+ * Encodes a file path by replacing the user's profile folder with "IntelliDisk\".
+ */
 std::wstring encode_filepath(std::wstring strResult)
 {
 	const std::wstring strApplicationName = _T("IntelliDisk\\");
@@ -51,6 +60,9 @@ std::wstring encode_filepath(std::wstring strResult)
 	return strResult;
 }
 
+/**
+ * Decodes a file path by replacing "IntelliDisk\" with the user's profile folder.
+ */
 std::wstring decode_filepath(std::wstring strResult)
 {
 	const std::wstring strApplicationName = _T("IntelliDisk\\");
@@ -60,20 +72,23 @@ std::wstring decode_filepath(std::wstring strResult)
 	return strResult;
 }
 
+/**
+ * Retrieves a unique machine identifier based on the current user and computer name.
+ * @return UTF-8 encoded string in the format "username:computername"
+ */
 const std::string GetMachineID()
 {
 	/* LINUX:
 	#include <unistd.h>
 	#include <limits.h>
-
 	char hostname[HOST_NAME_MAX];
 	char username[LOGIN_NAME_MAX];
 	gethostname(hostname, HOST_NAME_MAX);
 	getlogin_r(username, LOGIN_NAME_MAX);
 	*/
 
-	DWORD nLength = 0x1000;
-	TCHAR lpszUserName[0x1000] = { 0, };
+	DWORD nLength = 0x100;
+	TCHAR lpszUserName[0x100] = { 0, };
 	if (GetUserNameEx(NameUserPrincipal, lpszUserName, &nLength))
 	{
 		lpszUserName[nLength] = 0;
@@ -81,7 +96,7 @@ const std::string GetMachineID()
 	}
 	else
 	{
-		nLength = 0x1000;
+		nLength = 0x100;
 		if (GetUserName(lpszUserName, &nLength) != 0)
 		{
 			lpszUserName[nLength] = 0;
@@ -89,8 +104,8 @@ const std::string GetMachineID()
 		}
 	}
 
-	nLength = 0x1000;
-	TCHAR lpszComputerName[0x1000] = { 0, };
+	nLength = 0x100;
+	TCHAR lpszComputerName[0x100] = { 0, };
 	if (GetComputerNameEx(ComputerNamePhysicalDnsFullyQualified, lpszComputerName, &nLength))
 	{
 		lpszComputerName[nLength] = 0;
@@ -98,7 +113,7 @@ const std::string GetMachineID()
 	}
 	else
 	{
-		nLength = 0x1000;
+		nLength = 0x100;
 		if (GetComputerName(lpszComputerName, &nLength) != 0)
 		{
 			lpszComputerName[nLength] = 0;
@@ -112,6 +127,9 @@ const std::string GetMachineID()
 	return wstring_to_utf8(result);
 }
 
+/**
+ * Gets the path to the user's profile folder and appends "IntelliDisk\".
+ */
 const std::wstring GetSpecialFolder()
 {
 	WCHAR* lpszSpecialFolderPath = nullptr;
@@ -125,6 +143,11 @@ const std::wstring GetSpecialFolder()
 	return _T("");
 }
 
+/**
+ * Installs or removes IntelliDisk from Windows startup applications.
+ * @param bInstallStartupApps If true, adds to startup; if false, removes.
+ * @return true on success, false otherwise.
+ */
 bool InstallStartupApps(bool bInstallStartupApps)
 {
 	HKEY regValue;
@@ -158,6 +181,10 @@ bool InstallStartupApps(bool bInstallStartupApps)
 	return result;
 }
 
+/**
+ * Directory monitoring callback for file events.
+ * Adds a new item to the processing queue based on the file action.
+ */
 UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 {
 	const int nFileEvent = (IS_DELETE_FILE(faAction)) ? ID_FILE_DELETE : ID_FILE_UPLOAD;
@@ -167,17 +194,24 @@ UINT DirCallback(CFileInformation fiObject, EFileAction faAction, LPVOID lpData)
 	return 0; // success
 }
 
-const int MAX_BUFFER = 0x10000;
-int g_nPingCount = 0;
-bool g_bClientRunning = true;
-bool g_bIsConnected = false;
+const int MAX_BUFFER = 0x10000; ///< Maximum buffer size for file and socket operations.
+int g_nPingCount = 0;           ///< Ping counter for connection keep-alive.
+bool g_bClientRunning = true;   ///< Global flag to control client threads.
+bool g_bIsConnected = false;    ///< Global flag indicating connection status.
 
 const char HEX_MAP[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+/**
+ * Maps a nibble to its hexadecimal character.
+ */
 char replace(unsigned char c)
 {
 	return HEX_MAP[c & 0x0f];
 }
 
+/**
+ * Converts a byte to a two-character hexadecimal string.
+ */
 std::string char_to_hex(unsigned char c)
 {
 	std::string hex;
@@ -191,6 +225,9 @@ std::string char_to_hex(unsigned char c)
 	return hex;
 }
 
+/**
+ * Dumps a buffer as a space-separated hexadecimal string.
+ */
 std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
 {
 	std::string result;
@@ -202,6 +239,15 @@ std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
 	return utf8_to_wstring(result);
 }
 
+/**
+ * Reads a buffer from the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
+ * @param pApplicationSocket The socket to read from.
+ * @param pBuffer Buffer to store received data.
+ * @param nLength [in/out] Length of buffer and received data.
+ * @param ReceiveENQ Whether to expect an ENQ handshake.
+ * @param ReceiveEOT Whether to expect an EOT handshake.
+ * @return true on successful read and protocol validation, false otherwise.
+ */
 bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT)
 {
 	int nIndex = 0;
@@ -265,6 +311,15 @@ bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLeng
 	return (ACK == nReturn);
 }
 
+/**
+ * Writes a buffer to the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
+ * @param pApplicationSocket The socket to write to.
+ * @param pBuffer Buffer containing data to send.
+ * @param nLength Length of data to send.
+ * @param SendENQ Whether to send an ENQ handshake.
+ * @param SendEOT Whether to send an EOT handshake.
+ * @return true on successful write and protocol validation, false otherwise.
+ */
 bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT)
 {
 	int nCount = 0;
@@ -327,7 +382,15 @@ bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, con
 	return (ACK == nReturn);
 }
 
-std::wstring g_strCurrentDocument;
+std::wstring g_strCurrentDocument; ///< Currently processed document path (for upload/download).
+
+/**
+ * Downloads a file from the server using the application socket.
+ * Verifies file integrity using SHA256.
+ * @param pApplicationSocket The socket to use.
+ * @param strFilePath The local file path to save to.
+ * @return true on success, false otherwise.
+ */
 bool DownloadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	SHA256 pSHA256;
@@ -393,6 +456,13 @@ bool DownloadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 	return true;
 }
 
+/**
+ * Uploads a file to the server using the application socket.
+ * Sends file data and SHA256 digest for integrity verification.
+ * @param pApplicationSocket The socket to use.
+ * @param strFilePath The local file path to upload.
+ * @return true on success, false otherwise.
+ */
 bool UploadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	SHA256 pSHA256;
@@ -452,6 +522,12 @@ bool UploadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 	return true;
 }
 
+/**
+ * Producer thread function.
+ * Handles connection establishment, login, and incoming server commands.
+ * @param lpParam Pointer to CMainFrame instance.
+ * @return 0 on thread exit.
+ */
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
 	unsigned char pBuffer[MAX_BUFFER] = { 0, };
@@ -472,12 +548,12 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 				pApplicationSocket.CreateAndConnect(pMainFrame->m_strServerIP, pMainFrame->m_nServerPort);
 				const std::string strCommand = "IntelliDisk";
 				nLength = (int)strCommand.length() + 1;
-				if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
+				if (WriteBuffer(pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, false))
 				{
 					TRACE(_T("Client connected!\n"));
 					const std::string strMachineID = GetMachineID();
 					int nComputerLength = (int)strMachineID.length() + 1;
-					if (WriteBuffer(pApplicationSocket, (unsigned char*) strMachineID.c_str(), nComputerLength, false, true))
+					if (WriteBuffer(pApplicationSocket, (unsigned char*)strMachineID.c_str(), nComputerLength, false, true))
 					{
 						TRACE(_T("Logged In!\n"));
 						g_bIsConnected = true;
@@ -544,7 +620,7 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 						g_nPingCount = 0;
 						const std::string strCommand = "Ping";
 						nLength = (int)strCommand.length() + 1;
-						if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, true))
+						if (WriteBuffer(pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, true))
 						{
 							TRACE(_T("Ping!\n"));
 						}
@@ -572,6 +648,12 @@ DWORD WINAPI ProducerThread(LPVOID lpParam)
 	return 0;
 }
 
+/**
+ * Consumer thread function.
+ * Processes file events (upload, download, delete) from the resource queue.
+ * @param lpParam Pointer to CMainFrame instance.
+ * @return 0 on thread exit.
+ */
 DWORD WINAPI ConsumerThread(LPVOID lpParam)
 {
 	int nLength = 0;
@@ -637,7 +719,7 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 				{
 					const std::string strCommand = "Close";
 					nLength = (int)strCommand.length() + 1;
-					if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, true))
+					if (WriteBuffer(pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, true))
 					{
 						TRACE("Closing...\n");
 						pApplicationSocket.Close();
@@ -666,11 +748,11 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 						{
 							const std::string strCommand = "Upload";
 							nLength = (int)strCommand.length() + 1;
-							if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
+							if (WriteBuffer(pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, false))
 							{
 								const std::string strASCII = wstring_to_utf8(encode_filepath(strFilePath));
 								const int nFileNameLength = (int)strASCII.length() + 1;
-								if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, false))
+								if (WriteBuffer(pApplicationSocket, (unsigned char*)strASCII.c_str(), nFileNameLength, false, false))
 								{
 									TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
 									VERIFY(UploadFile(pApplicationSocket, strFilePath));
@@ -683,11 +765,11 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 							{
 								const std::string strCommand = "Delete";
 								nLength = (int)strCommand.length() + 1;
-								if (WriteBuffer(pApplicationSocket, (unsigned char*) strCommand.c_str(), nLength, true, false))
+								if (WriteBuffer(pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, false))
 								{
 									const std::string strASCII = wstring_to_utf8(encode_filepath(strFilePath));
 									const int nFileNameLength = (int)strASCII.length() + 1;
-									if (WriteBuffer(pApplicationSocket, (unsigned char*) strASCII.c_str(), nFileNameLength, false, true))
+									if (WriteBuffer(pApplicationSocket, (unsigned char*)strASCII.c_str(), nFileNameLength, false, true))
 									{
 										TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
 									}
@@ -713,6 +795,12 @@ DWORD WINAPI ConsumerThread(LPVOID lpParam)
 	return 0;
 }
 
+/**
+ * Adds a new file event item to the resource queue for processing.
+ * @param nFileEvent The file event type (upload, download, delete, etc.).
+ * @param strFilePath The file path associated with the event.
+ * @param lpParam Pointer to CMainFrame instance.
+ */
 void AddNewItem(const int nFileEvent, const std::wstring& strFilePath, LPVOID lpParam)
 {
 	if ((g_strCurrentDocument.compare(strFilePath) == 0) && (ID_FILE_UPLOAD == nFileEvent))
