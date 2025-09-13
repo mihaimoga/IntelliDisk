@@ -193,16 +193,17 @@
     </None>
     <None Include="..\LICENSE" />
     <None Include="ReleaseNotes.html" />
-    <None Include="SoftwareContextRegister.html" />
     <None Include="..\CODE_OF_CONDUCT.md" />
     <None Include="..\CONTRIBUTING.md" />
     <None Include="..\README.md" />
     <None Include="..\IntelliDisk.html" />
     <None Include="..\IntelliDisk.sql" />
     <None Include="packages.config" />
+    <None Include="SoftwareContentRegister.html" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>
