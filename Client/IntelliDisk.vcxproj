@@ -23,7 +23,7 @@
     <ProjectGuid>{5790CA79-3BC9-4298-98F9-F3889DA60C44}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>IntelliDisk</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
