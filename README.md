@@ -84,7 +84,7 @@ This open source project uses the following libraries:
 
 - PJ Naughter's [IAppSettings](https://www.naughter.com/appsettings.html)
 - René Nyffenegger's [base64](https://github.com/ReneNyffenegger/cpp-base64)
-- jukov's [CFileInformation, CNotifyDirCheck](https://www.codeproject.com/Articles/4692/How-to-get-a-notification-if-change-occurs-in-a-sp)
+- jukov's [CFileInformation, CNotifyDirCheck](https://www.codeproject.com/articles/How-to-get-a-notification-if-change-occurs-in-a-sp)
 - [genUp4win](https://github.com/mihaimoga/genUp4win)
 - PJ Naughter's [CHLinkCtrl](https://www.naughter.com/hlinkctrl.html)
 - PJ Naughter's [CInstanceChecker](https://www.naughter.com/sinstance.html)
