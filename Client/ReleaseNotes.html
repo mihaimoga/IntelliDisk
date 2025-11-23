@@ -62,11 +62,11 @@
 						</li>
 						<li>Version 1.03 (November 5<sup>th</sup>, 2023):
 							<ul>
-								<li>Updated PJ Naughter's <code>CTrayNotifyIcon</code> library to the latest version available. <blockquote>Fixed an issue where the <code>CTrayNotifyIcon::OnTrayNotification</code> callback method would not work correctly if the <code>m_NotifyIconData.uTimeout</code> member variable gets updated during runtime of client applications. This can occur when you call <code>CTrayNotifyIcon::SetBalloonDetails</code>. Thanks to Maisala Tuomo for reporting this bug.</blockquote></li>
-								<li>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available. <blockquote>Optimized construction of various <code>std::vector</code> and <code>std::[w]string</code> instances throughout the codebase.</blockquote></li>
+								<li>Updated PJ Naughter's <code>CTrayNotifyIcon</code> library to the latest version available.<br><blockquote>Fixed an issue where the <code>CTrayNotifyIcon::OnTrayNotification</code> callback method would not work correctly if the <code>m_NotifyIconData.uTimeout</code> member variable gets updated during runtime of client applications. This can occur when you call <code>CTrayNotifyIcon::SetBalloonDetails</code>. Thanks to Maisala Tuomo for reporting this bug.</blockquote></li>
+								<li>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available.<br><blockquote>Optimized construction of various <code>std::vector</code> and <code>std::[w]string</code> instances throughout the codebase.</blockquote></li>
 							</ul>
 						</li>
-						<li>Version 1.04 (December 17<sup>th</sup>, 2023): Updated PJ Naughter's <code>ODBCWrappers</code> library to the latest version available. <blockquote>Updated module to remove usage of _if_exists by now using ODBCVER and _ATL_MODULES preprocessor macro checks along with SFINAE.</blockquote></li>
+						<li>Version 1.04 (December 17<sup>th</sup>, 2023): Updated PJ Naughter's <code>ODBCWrappers</code> library to the latest version available.<br><blockquote>Updated module to remove usage of _if_exists by now using ODBCVER and _ATL_MODULES preprocessor macro checks along with SFINAE.</blockquote></li>
 						<li>Version 1.05 (January 1<sup>st</sup>, 2024):
 							<ul>
 								<li>Switched to Visual Studio Enterprise 2022 (some changes were made in the source code).</li>
@@ -75,7 +75,7 @@
 						</li>
 						<li>Version 1.06 (January 13<sup>th</sup>, 2024):
 							<ul>
-								<li>Added LICENSE to installation folder.</li><li>Updated Jérémy LAMBERT's <code>SHA256</code> library to the latest version available. <blockquote>Make digest() return a std::array - this way, memory management is automatic, and the compiler can more easily detect out-of-bounds reads or writes.</blockquote></li>
+								<li>Added LICENSE to installation folder.</li><li>Updated Jérémy LAMBERT's <code>SHA256</code> library to the latest version available.<br><blockquote>Make digest() return a std::array - this way, memory management is automatic, and the compiler can more easily detect out-of-bounds reads or writes.</blockquote></li>
 							</ul>
 						</li>
 						<li>Version 1.07 (January 26<sup>th</sup>, 2024): Added ReleaseNotes.html and SoftwareContentRegister.html to GitHub repo.</li>
@@ -90,17 +90,17 @@
 						<li>Version 1.10 (March 1<sup>st</sup>, 2025):
 							<ul>
 								<li>Updated copyright information.</li>
-								<li>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available. <blockquote>Updated <code>GetModuleFileName</code> calls to handle path length > <code>_MAX_PATH</code>.<br>Reworked <code>CIniAppSettings::GetCurrentProcessIniFileLocation</code> to use <code>std::filesystem::path</code>.</blockquote></li>
-								<li>Updated <code>genUp4win</code> library to the latest version available. <blockquote>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available.<br>Updated <code>GetModuleFileName</code> calls to handle path length > <code>_MAX_PATH</code>.<br>Updated <code>GetAppSettingsFilePath</code> to use <code>std::filesystem::path</code>.</blockquote></li>
+								<li>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available.<br><blockquote>Updated <code>GetModuleFileName</code> calls to handle path length > <code>_MAX_PATH</code>.<br>Reworked <code>CIniAppSettings::GetCurrentProcessIniFileLocation</code> to use <code>std::filesystem::path</code>.</blockquote></li>
+								<li>Updated <code>genUp4win</code> library to the latest version available.<br><blockquote>Updated PJ Naughter's <code>AppSettings</code> library to the latest version available.<br>Updated <code>GetModuleFileName</code> calls to handle path length > <code>_MAX_PATH</code>.<br>Updated <code>GetAppSettingsFilePath</code> to use <code>std::filesystem::path</code>.</blockquote></li>
 							</ul>
 						</li>
 						<li>Version 1.11 (March 9<sup>th</sup>, 2025):
 							<ul>
-								<li>Updated <code>genUp4win</code> library to the latest version available. <blockquote>Added support for Italian, Spanish, German and Greek languages.<br>Added support for Russian, Turkish, Chinese and Czech languages.</blockquote></li>
+								<li>Updated <code>genUp4win</code> library to the latest version available.<br><blockquote>Added support for Italian, Spanish, German and Greek languages.<br>Added support for Russian, Turkish, Chinese and Czech languages.</blockquote></li>
 								<li>Removed deprecated functions in C++17, defined in <code>&lt;codecvt&gt;</code> header.</li>
 							</ul>
 						</li>
-						<li>Version 1.12 (March 23<sup>rd</sup>, 2025): Updated <code>genUp4win</code> library to the latest version available. <blockquote>Reverted back from <code>GetTempPath2</code> to <code>GetTempPath</code> to make it compatible again with Windows 10.</blockquote></li>
+						<li>Version 1.12 (March 23<sup>rd</sup>, 2025): Updated <code>genUp4win</code> library to the latest version available.<br><blockquote>Reverted back from <code>GetTempPath2</code> to <code>GetTempPath</code> to make it compatible again with Windows 10.</blockquote></li>
 						<li>Version 1.13 (September 30<sup>th</sup>, 2025): This release focuses on system stability and reliability. No new features were introduced. Includes:
 							<ul>
 								<li>Fixes for known bugs.</li>
