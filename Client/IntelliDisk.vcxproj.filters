@@ -198,8 +198,8 @@
     <None Include="..\README.md" />
     <None Include="..\IntelliDisk.html" />
     <None Include="..\IntelliDisk.sql" />
-    <None Include="packages.config" />
     <None Include="SoftwareContentRegister.html" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
