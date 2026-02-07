@@ -320,6 +320,7 @@ bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLeng
  * @param SendEOT Whether to send an EOT handshake.
  * @return true on successful write and protocol validation, false otherwise.
  */
+#pragma warning(suppress: 6262)
 bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT)
 {
 	int nCount = 0;
@@ -391,6 +392,7 @@ std::wstring g_strCurrentDocument; ///< Currently processed document path (for u
  * @param strFilePath The local file path to save to.
  * @return true on success, false otherwise.
  */
+#pragma warning(suppress: 6262)
 bool DownloadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	SHA256 pSHA256;
@@ -463,6 +465,7 @@ bool DownloadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
  * @param strFilePath The local file path to upload.
  * @return true on success, false otherwise.
  */
+#pragma warning(suppress: 6262)
 bool UploadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	SHA256 pSHA256;
@@ -528,6 +531,7 @@ bool UploadFile(CWSocket& pApplicationSocket, const std::wstring& strFilePath)
  * @param lpParam Pointer to CMainFrame instance.
  * @return 0 on thread exit.
  */
+#pragma warning(suppress: 6262)
 DWORD WINAPI ProducerThread(LPVOID lpParam)
 {
 	unsigned char pBuffer[MAX_BUFFER] = { 0, };

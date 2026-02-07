@@ -346,6 +346,7 @@ bool ConnectToDatabase(CODBC::CEnvironment& pEnvironment, CODBC::CConnection& pC
  * @param strFilePath The file path to download.
  * @return true on success, false on failure.
  */
+#pragma warning(suppress: 6262)
 bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	CODBC::CEnvironment pEnvironment;
@@ -412,6 +413,7 @@ bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const st
  * @param strFilePath The file path to upload.
  * @return true on success, false on failure.
  */
+#pragma warning(suppress: 6262)
 bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	CODBC::CEnvironment pEnvironment;
@@ -504,6 +506,7 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
  * @param strFilePath The file path to delete.
  * @return true on success, false on failure.
  */
+#pragma warning(suppress: 6262)
 bool DeleteFile(const int /*nSocketIndex*/, CWSocket& pApplicationSocket, const std::wstring& strFilePath)
 {
 	CODBC::CEnvironment pEnvironment;

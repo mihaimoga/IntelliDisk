@@ -225,6 +225,7 @@ bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned c
  * @param SendEOT Whether to send an EOT handshake.
  * @return true on successful write and protocol validation, false otherwise.
  */
+#pragma warning(suppress: 6262)
 bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT)
 {
 	int nCount = 0;
@@ -347,6 +348,7 @@ void PopNotification(const int& nSocketIndex, int& nFileEvent, std::wstring& str
  * @param lpParam Pointer to the socket index (int*).
  * @return 0 on thread exit.
  */
+#pragma warning(suppress: 6262)
 DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 {
 	unsigned char pBuffer[MAX_BUFFER] = { 0, };
