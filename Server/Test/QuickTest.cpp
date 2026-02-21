@@ -33,6 +33,10 @@ END_MESSAGE_MAP()
 
 // CQuickTestApp construction
 
+/**
+ * @brief Constructor for the QuickTest application
+ * @details Initializes the application with Restart Manager support
+ */
 CQuickTestApp::CQuickTestApp()
 {
 	// support Restart Manager
@@ -48,6 +52,12 @@ CQuickTestApp theApp;
 
 // CQuickTestApp initialization
 
+/**
+ * @brief Initializes the application instance
+ * @details Initializes common controls, sockets, creates the shell manager,
+ *          and displays the main dialog for testing IntelliDisk server functionality
+ * @return FALSE to exit the application after dialog is closed
+ */
 BOOL CQuickTestApp::InitInstance()
 {
 	// InitCommonControlsEx() is required on Windows XP if an application

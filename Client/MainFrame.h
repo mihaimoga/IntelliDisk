@@ -27,15 +27,17 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 constexpr auto BSIZE = 0x10000; // this is only for testing, not for the final commercial application
 constexpr auto NOTIFY_FILE_SIZE = 0x10000; // this is only for testing, not for the final commercial application
 
+// Structure to hold file event information in the notification queue
 typedef struct {
-	int nFileEvent;
-	std::wstring strFilePath;
+	int nFileEvent;          // Event type (stop, download, upload, delete)
+	std::wstring strFilePath; // Full path to the file being processed
 } NOTIFY_FILE_DATA;
 
-#define ID_STOP_PROCESS 0x01
-#define ID_FILE_DOWNLOAD 0x02
-#define ID_FILE_UPLOAD 0x03
-#define ID_FILE_DELETE 0x04
+// File event identifiers for queue processing
+#define ID_STOP_PROCESS 0x01   // Stop processing and shutdown threads
+#define ID_FILE_DOWNLOAD 0x02  // Download file from server
+#define ID_FILE_UPLOAD 0x03    // Upload file to server
+#define ID_FILE_DELETE 0x04    // Delete file on server
 
 class CMainFrame : public CFrameWndEx
 {

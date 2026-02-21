@@ -96,13 +96,15 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 
 // https://www.iconfinder.com/iconsets/ios-11-glyphs
 
-#define IntelliDiskIP _T("127.0.0.1")
-#define IntelliDiskPort 8080
+// Default server connection settings
+#define IntelliDiskIP _T("127.0.0.1")  // Default server IP address (localhost)
+#define IntelliDiskPort 8080            // Default server port
 #define CWSOCKET_MFC_EXTENSIONS
 
-#define STX 0x02
-#define ETX 0x03
-#define EOT 0x04
-#define ENQ 0x05
-#define ACK 0x06
-#define NAK 0x15
+// Protocol control characters for communication handshake
+#define STX 0x02  // Start of Text - marks the beginning of a data packet
+#define ETX 0x03  // End of Text - marks the end of a data packet
+#define EOT 0x04  // End of Transmission - signals end of communication
+#define ENQ 0x05  // Enquiry - requests acknowledgment from receiver
+#define ACK 0x06  // Acknowledgment - confirms successful receipt
+#define NAK 0x15  // Negative Acknowledgment - indicates transmission error

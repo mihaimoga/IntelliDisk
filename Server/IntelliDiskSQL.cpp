@@ -25,13 +25,14 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #endif
 
 /**
- * @brief ODBC accessor for inserting a row into the `filename` table.
+ * @brief ODBC accessor for inserting a row into the `filename` table
+ * @details Maps parameters for filepath and filesize to SQL placeholders
  */
 class CFilenameInsertAccessor
 {
 public:
-	TCHAR m_lpszFilepath[4000];
-	__int64 m_nFilesize;
+	TCHAR m_lpszFilepath[4000];  // File path (relative to IntelliDisk root)
+	__int64 m_nFilesize;          // Total file size in bytes
 
 	BEGIN_ODBC_PARAM_MAP(CFilenameInsertAccessor)
 		SET_ODBC_PARAM_TYPE(SQL_PARAM_INPUT)
@@ -154,13 +155,14 @@ public:
 };
 
 /**
- * @brief ODBC accessor for inserting a row into the `filedata` table.
+ * @brief ODBC accessor for inserting a row into the `filedata` table
+ * @details Stores Base64-encoded file chunks with their decoded size
  */
 class CFiledataInsertAccessor
 {
 public:
-	TCHAR m_lpszContent[0x20000];
-	__int64 m_nBase64;
+	TCHAR m_lpszContent[0x20000];  // Base64-encoded file chunk (max ~128KB)
+	__int64 m_nBase64;              // Size of decoded (original) data
 
 	BEGIN_ODBC_PARAM_MAP(CFiledataInsertAccessor)
 		SET_ODBC_PARAM_TYPE(SQL_PARAM_INPUT)
@@ -199,12 +201,13 @@ public:
 };
 
 /**
- * @brief ODBC accessor for selecting the file size from the `filename` table.
+ * @brief ODBC accessor for selecting the file size from the `filename` table
+ * @details Retrieves file size for the file identified by @last_filename_id
  */
 class CFilesizeSelectAccessor
 {
 public:
-	__int64 m_nFilesize;
+	__int64 m_nFilesize;  // Total file size in bytes
 
 	BEGIN_ODBC_PARAM_MAP(CFilesizeSelectAccessor)
 	END_ODBC_PARAM_MAP()
@@ -243,13 +246,14 @@ public:
 };
 
 /**
- * @brief ODBC accessor for selecting file data from the `filedata` table.
+ * @brief ODBC accessor for selecting file data from the `filedata` table
+ * @details Retrieves Base64-encoded chunks ordered by filedata_id for sequential streaming
  */
 class CFiledataSelectAccessor
 {
 public:
-	TCHAR m_lpszContent[0x20000];
-	__int64 m_nBase64;
+	TCHAR m_lpszContent[0x20000];  // Base64-encoded file chunk
+	__int64 m_nBase64;              // Size of decoded (original) data
 
 	BEGIN_ODBC_PARAM_MAP(CFiledataSelectAccessor)
 	END_ODBC_PARAM_MAP()
@@ -275,6 +279,7 @@ public:
 #pragma warning(suppress: 26477)
 		SQLRETURN nRet{ Open(pDbConnect, GetDefaultCommand(), bBind, pAttributes, nAttributes) };
 		ODBC_CHECK_RETURN_FALSE(nRet, m_Command);
+		// Iterate through all file data chunks for this file
 		while (true)
 		{
 			ClearRecord();
@@ -282,8 +287,10 @@ public:
 			if (!SQL_SUCCEEDED(nRet))
 				break;
 			TRACE(_T("m_nBase64 = %lld\n"), m_nBase64);
+			// Decode Base64 data back to binary
 			std::string decoded = base64_decode(wstring_to_utf8(m_lpszContent));
 			ASSERT((size_t)m_nBase64 == decoded.length());
+			// Send chunk to client and update SHA256 hash
 			if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)decoded.data(), (int)decoded.length(), false, false))
 			{
 				pSHA256.update((unsigned char*)decoded.data(), decoded.length());
@@ -309,6 +316,7 @@ bool ConnectToDatabase(CODBC::CEnvironment& pEnvironment, CODBC::CConnection& pC
 	CODBC::String sConnectionOutString;
 	TCHAR sConnectionInString[0x100];
 
+	// Load database configuration from INI file
 	std::wstring strHostName;
 	int nHostPort = 3306;
 	std::wstring strDatabase;
@@ -318,20 +326,26 @@ bool ConnectToDatabase(CODBC::CEnvironment& pEnvironment, CODBC::CConnection& pC
 		return false;
 	const std::wstring strHostPort = utf8_to_wstring(std::to_string(nHostPort));
 
+	// Create ODBC environment handle
 	SQLRETURN nRet = pEnvironment.Create();
 	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
 
+	// Set ODBC version to 3.80
 	nRet = pEnvironment.SetAttr(SQL_ATTR_ODBC_VERSION, SQL_OV_ODBC3_80);
 	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
 
+	// Enable connection pooling for better performance
 	nRet = pEnvironment.SetAttrU(SQL_ATTR_CONNECTION_POOLING, SQL_CP_DEFAULT);
 	ODBC_CHECK_RETURN_FALSE(nRet, pEnvironment);
 
+	// Create database connection handle
 	nRet = pConnection.Create(pEnvironment);
 	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
 
+	// Build MySQL connection string with credentials
 	_stprintf_s(sConnectionInString, _countof(sConnectionInString), _T("Driver={MySQL ODBC 8.0 Unicode Driver};Server=%s;Port=%s;Database=%s;User=%s;Password=%s;"),
 		strHostName.c_str(), strHostPort.c_str(), strDatabase.c_str(), strUsername.c_str(), strPassword.c_str());
+	// Establish connection to MySQL database
 	nRet = pConnection.DriverConnect(const_cast<SQLTCHAR*>(reinterpret_cast<const SQLTCHAR*>(sConnectionInString)), sConnectionOutString);
 	ODBC_CHECK_RETURN_FALSE(nRet, pConnection);
 
@@ -367,8 +381,9 @@ bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const st
 	CFilesizeSelect pFilesizeSelect;
 	CFiledataSelect pFiledataSelect;
 	TRACE(_T("[DownloadFile] %s\n"), strFilePath.c_str());
+	// Connect to database and retrieve file metadata
 	if (!ConnectToDatabase(pEnvironment, pConnection) ||
-		!pFilenameSelect.Execute(pConnection, strFilePath) ||
+		!pFilenameSelect.Execute(pConnection, strFilePath) ||  // Set @last_filename_id
 		!pFilesizeSelect.Iterate(pConnection, nFileLength, true, attributes.data(), static_cast<ULONG>(attributes.size())))
 	{
 		TRACE("MySQL operation failed!\n");
@@ -376,9 +391,11 @@ bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const st
 	}
 
 	TRACE(_T("nFileLength = %llu\n"), nFileLength);
+	// Send file size to client
 	int nLength = sizeof(nFileLength);
 	if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)&nFileLength, nLength, false, false))
 	{
+		// Stream file data chunks from database to client
 		if ((nFileLength > 0) &&
 			!pFiledataSelect.Iterate(pConnection, nSocketIndex, pApplicationSocket, pSHA256, true, attributes.data(), static_cast<ULONG>(attributes.size())))
 		{
@@ -391,6 +408,7 @@ bool DownloadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const st
 		TRACE(_T("Invalid nFileLength!\n"));
 		return false;
 	}
+	// Send SHA256 hash for client-side integrity verification
 	const std::string strDigestSHA256 = pSHA256.toString(pSHA256.digest());
 	nLength = (int)strDigestSHA256.length() + 1;
 	if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strDigestSHA256.c_str(), nLength, false, true))
@@ -433,6 +451,7 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 		return false;
 	}
 
+	// Receive file size from client
 	ULONGLONG nFileLength = 0;
 	int nLength = (int)(sizeof(nFileLength) + 5);
 	ZeroMemory(pFileBuffer, sizeof(pFileBuffer));
@@ -440,18 +459,21 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 	{
 		CopyMemory(&nFileLength, &pFileBuffer[3], sizeof(nFileLength));
 		TRACE(_T("nFileLength = %llu\n"), nFileLength);
+		// Try to insert new file record
 		if (!pFilenameInsert.Execute(pConnection, strFilePath, nFileLength) ||
 			!pGenericStatement.Execute(pConnection, _T("SET @last_filename_id = LAST_INSERT_ID()")))
 		{
-			if (!pFilenameSelect.Execute(pConnection, strFilePath) ||
-				!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filedata` WHERE `filename_id` = @last_filename_id")) ||
-				!pFilenameUpdate.Execute(pConnection, nFileLength))
+			// File already exists - update it instead (replace old data)
+			if (!pFilenameSelect.Execute(pConnection, strFilePath) ||  // Set @last_filename_id
+				!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filedata` WHERE `filename_id` = @last_filename_id")) ||  // Remove old chunks
+				!pFilenameUpdate.Execute(pConnection, nFileLength))  // Update file size
 			{
 				TRACE("MySQL operation failed!\n");
 				return false;
 			}
 		}
 
+		// Receive and store file data in chunks
 		ULONGLONG nFileIndex = 0;
 		while (nFileIndex < nFileLength)
 		{
@@ -460,8 +482,10 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 			if (ReadBuffer(nSocketIndex, pApplicationSocket, pFileBuffer, nLength, false, false))
 			{
 				nFileIndex += (nLength - 5);
+				// Update SHA256 hash for integrity verification
 				pSHA256.update(&pFileBuffer[3], nLength - 5);
 
+				// Encode data as Base64 for storage in MySQL TEXT column
 				std::string encoded = base64_encode(reinterpret_cast<const unsigned char*>(&pFileBuffer[3]), nLength - 5);
 				if (!pFiledataInsert.Execute(pConnection, utf8_to_wstring(encoded), nLength - 5))
 				{
@@ -480,6 +504,7 @@ bool UploadFile(const int nSocketIndex, CWSocket& pApplicationSocket, const std:
 		TRACE(_T("Invalid nFileLength!\n"));
 		return false;
 	}
+	// Verify file integrity using SHA256 hash from client
 	const std::string strDigestSHA256 = pSHA256.toString(pSHA256.digest());
 	nLength = (int)strDigestSHA256.length() + 5;
 	ZeroMemory(pFileBuffer, sizeof(pFileBuffer));
@@ -514,15 +539,17 @@ bool DeleteFile(const int /*nSocketIndex*/, CWSocket& pApplicationSocket, const 
 
 	CGenericStatement pGenericStatement;
 	CFilenameSelect pFilenameSelect;
+	// Connect to database and delete file data and metadata
 	if (!ConnectToDatabase(pEnvironment, pConnection) ||
-		!pFilenameSelect.Execute(pConnection, strFilePath) ||
-		!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filedata` WHERE `filename_id` = @last_filename_id")) ||
-		!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filename` WHERE `filename_id` = @last_filename_id")))
+		!pFilenameSelect.Execute(pConnection, strFilePath) ||  // Set @last_filename_id
+		!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filedata` WHERE `filename_id` = @last_filename_id")) ||  // Delete file chunks
+		!pGenericStatement.Execute(pConnection, _T("DELETE FROM `filename` WHERE `filename_id` = @last_filename_id")))  // Delete file record
 	{
 		TRACE("MySQL operation failed!\n");
 		return false;
 	}
 
+	// Wait for EOT (end of transmission) from client
 	unsigned char pFileBuffer[MAX_BUFFER] = { 0, };
 	int nLength = sizeof(pFileBuffer);
 	ZeroMemory(pFileBuffer, sizeof(pFileBuffer));

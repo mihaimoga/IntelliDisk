@@ -22,57 +22,76 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #define new DEBUG_NEW
 #endif
 
-// Protocol and event constants
-#define STX 0x02
-#define ETX 0x03
-#define EOT 0x04
-#define ENQ 0x05
-#define ACK 0x06
-#define NAK 0x15
+// Protocol control characters for communication handshake
+// Same as client-side protocol for bidirectional communication
+#define STX 0x02  // Start of Text - marks the beginning of a data packet
+#define ETX 0x03  // End of Text - marks the end of a data packet
+#define EOT 0x04  // End of Transmission - signals end of communication
+#define ENQ 0x05  // Enquiry - requests acknowledgment from receiver
+#define ACK 0x06  // Acknowledgment - confirms successful receipt
+#define NAK 0x15  // Negative Acknowledgment - indicates transmission error
 
-#define ID_STOP_PROCESS 0x01
-#define ID_FILE_DOWNLOAD 0x02
-#define ID_FILE_UPLOAD 0x03
-#define ID_FILE_DELETE 0x04
+// File event identifiers for client notification queue
+#define ID_STOP_PROCESS 0x01   // Stop processing (not used server-side)
+#define ID_FILE_DOWNLOAD 0x02  // Notify client to download file
+#define ID_FILE_UPLOAD 0x03    // Notify client to upload file (not used)
+#define ID_FILE_DELETE 0x04    // Notify client to delete file
 
-constexpr auto NOTIFY_FILE_SIZE = 0x10000;
-constexpr auto MAX_SOCKET_CONNECTIONS = 0x10000;
+constexpr auto NOTIFY_FILE_SIZE = 0x10000;      // Max queue size per client
+constexpr auto MAX_SOCKET_CONNECTIONS = 0x10000; // Max concurrent clients
 
-// Global server state and socket management
+// === GLOBAL SERVER STATE ===
+// Server lifecycle flag - controls all client threads
 bool g_bServerRunning = false;
-CWSocket g_pServerSocket;
-int g_nSocketCount = 0;
-CWSocket g_pClientSocket[MAX_SOCKET_CONNECTIONS];
-int g_nThreadCount = 0;
-DWORD m_dwThreadID[MAX_SOCKET_CONNECTIONS] = { 0, };
-HANDLE g_hThreadArray[MAX_SOCKET_CONNECTIONS] = { nullptr, };
 
-// Notification queue structures for each client connection
+// Main server socket that accepts incoming connections
+CWSocket g_pServerSocket;
+
+// Client connection management
+int g_nSocketCount = 0;  // Total number of connected clients
+CWSocket g_pClientSocket[MAX_SOCKET_CONNECTIONS];  // Socket for each client
+int g_nThreadCount = 0;  // Total number of active threads
+DWORD m_dwThreadID[MAX_SOCKET_CONNECTIONS] = { 0, };  // Thread IDs
+HANDLE g_hThreadArray[MAX_SOCKET_CONNECTIONS] = { nullptr, };  // Thread handles
+
+// === PER-CLIENT NOTIFICATION QUEUE ARCHITECTURE ===
+// Each connected client has its own notification queue to receive
+// file change events from other clients (multi-client sync mechanism)
+
+// Single file event item
 typedef struct {
-	int nFileEvent;
-	std::wstring strFilePath;
+	int nFileEvent;           // Event type: ID_FILE_DOWNLOAD or ID_FILE_DELETE
+	std::wstring strFilePath; // Affected file path
 } NOTIFY_FILE_DATA;
 
+// Complete notification queue for one client
+// Uses producer-consumer pattern with circular buffer
 typedef struct {
-	HANDLE hOccupiedSemaphore;
-	HANDLE hEmptySemaphore;
-	HANDLE hResourceMutex;
-	int nNextIn;
-	int nNextOut;
-	NOTIFY_FILE_DATA arrNotifyData[NOTIFY_FILE_SIZE];
+	HANDLE hOccupiedSemaphore;  // Count of items in queue
+	HANDLE hEmptySemaphore;      // Count of free slots
+	HANDLE hResourceMutex;       // Protects queue data structure
+	int nNextIn;                 // Write pointer (circular)
+	int nNextOut;                // Read pointer (circular)
+	NOTIFY_FILE_DATA arrNotifyData[NOTIFY_FILE_SIZE];  // Circular buffer
 } NOTIFY_FILE_ITEM;
 
+// Array of notification queues - one per client
+// g_pThreadData[i] corresponds to g_pClientSocket[i]
 NOTIFY_FILE_ITEM* g_pThreadData[MAX_SOCKET_CONNECTIONS];
 
-// Database and authentication configuration
-std::wstring g_strHostName;
-int g_nHostPort = 3306;
-std::wstring g_strDatabase;
-std::wstring g_strUsername;
-std::wstring g_strPassword;
+// === DATABASE AND AUTHENTICATION CONFIGURATION ===
+// Loaded from IntelliDisk.xml at server startup
+std::wstring g_strHostName;  // MySQL server hostname
+int g_nHostPort = 3306;       // MySQL server port (default 3306)
+std::wstring g_strDatabase;   // Database name
+std::wstring g_strUsername;   // Database username
+std::wstring g_strPassword;   // Database password
 
 /**
- * @brief Converts a UTF-8 encoded std::string to std::wstring.
+ * @brief Converts a UTF-8 encoded std::string to std::wstring
+ * @param string The UTF-8 encoded string to convert
+ * @return The converted wide string
+ * @throws std::runtime_error If the conversion fails
  */
 std::wstring utf8_to_wstring(const std::string& string)
 {
@@ -87,7 +106,10 @@ std::wstring utf8_to_wstring(const std::string& string)
 }
 
 /**
- * @brief Converts a std::wstring to a UTF-8 encoded std::string.
+ * @brief Converts a std::wstring to a UTF-8 encoded std::string
+ * @param wide_string The wide string to convert
+ * @return The UTF-8 encoded string
+ * @throws std::runtime_error If the conversion fails
  */
 std::string wstring_to_utf8(const std::wstring& wide_string)
 {
@@ -108,7 +130,9 @@ bool g_bIsConnected[MAX_SOCKET_CONNECTIONS];
 const char HEX_MAP[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
 /**
- * @brief Maps a nibble to its hexadecimal character.
+ * @brief Maps a nibble to its hexadecimal character
+ * @param c The byte value to convert (only lower 4 bits are used)
+ * @return The hexadecimal character ('0'-'9', 'A'-'F')
  */
 char replace(unsigned char c)
 {
@@ -116,7 +140,9 @@ char replace(unsigned char c)
 }
 
 /**
- * @brief Converts a byte to a two-character hexadecimal string.
+ * @brief Converts a byte to a two-character hexadecimal string
+ * @param c The byte value to convert
+ * @return Two-character hexadecimal string representation
  */
 std::string char_to_hex(unsigned char c)
 {
@@ -129,7 +155,10 @@ std::string char_to_hex(unsigned char c)
 }
 
 /**
- * @brief Dumps a buffer as a space-separated hexadecimal string.
+ * @brief Dumps a buffer as a space-separated hexadecimal string
+ * @param pBuffer Pointer to the buffer to dump
+ * @param nLength Length of the buffer in bytes
+ * @return Wide string containing space-separated hexadecimal values
  */
 std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
 {
@@ -143,14 +172,14 @@ std::wstring dumpHEX(unsigned char* pBuffer, const int nLength)
 }
 
 /**
- * @brief Reads a buffer from the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
- * @param nSocketIndex Index of the client socket.
- * @param pApplicationSocket The socket to read from.
- * @param pBuffer Buffer to store received data.
- * @param nLength [in/out] Length of buffer and received data.
- * @param ReceiveENQ Whether to expect an ENQ handshake.
- * @param ReceiveEOT Whether to expect an EOT handshake.
- * @return true on successful read and protocol validation, false otherwise.
+ * @brief Reads a buffer from the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK)
+ * @param nSocketIndex Index of the client socket in the global socket array
+ * @param pApplicationSocket The socket to read from
+ * @param pBuffer Buffer to store received data
+ * @param nLength [in/out] Length of buffer and received data
+ * @param ReceiveENQ Whether to expect an ENQ handshake
+ * @param ReceiveEOT Whether to expect an EOT handshake
+ * @return true on successful read and protocol validation, false otherwise
  */
 bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT)
 {
@@ -216,14 +245,14 @@ bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned c
 }
 
 /**
- * @brief Writes a buffer to the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
- * @param nSocketIndex Index of the client socket.
- * @param pApplicationSocket The socket to write to.
- * @param pBuffer Buffer containing data to send.
- * @param nLength Length of data to send.
- * @param SendENQ Whether to send an ENQ handshake.
- * @param SendEOT Whether to send an EOT handshake.
- * @return true on successful write and protocol validation, false otherwise.
+ * @brief Writes a buffer to the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK)
+ * @param nSocketIndex Index of the client socket in the global socket array
+ * @param pApplicationSocket The socket to write to
+ * @param pBuffer Buffer containing data to send
+ * @param nLength Length of data to send
+ * @param SendENQ Whether to send an ENQ handshake
+ * @param SendEOT Whether to send an EOT handshake
+ * @return true on successful write and protocol validation, false otherwise
  */
 #pragma warning(suppress: 6262)
 bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT)
@@ -289,37 +318,49 @@ bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const uns
 }
 
 /**
- * @brief Pushes a file event notification into the per-client queue.
- * @param nSocketIndex Index of the client socket.
- * @param nFileEvent The file event type (upload, download, delete, etc.).
- * @param strFilePath The file path associated with the event.
+ * @brief Pushes a file event notification into the per-client queue
+ * @param nSocketIndex Index of the client socket
+ * @param nFileEvent The file event type (ID_FILE_UPLOAD, ID_FILE_DOWNLOAD, ID_FILE_DELETE)
+ * @param strFilePath The file path associated with the event
+ * 
+ * MULTI-CLIENT SYNCHRONIZATION:
+ * =============================
+ * When Client A uploads/deletes a file, the server calls PushNotification()
+ * for all OTHER clients (B, C, D...) to notify them of the change.
+ * Each client's IntelliDiskThread will pop events from its queue and
+ * send NotifyDownload or NotifyDelete commands to keep clients in sync.
  */
 void PushNotification(const int& nSocketIndex, const int nFileEvent, const std::wstring& strFilePath)
 {
 	NOTIFY_FILE_ITEM* pThreadData = g_pThreadData[nSocketIndex];
+	// Verify queue is initialized before accessing
 	if ((pThreadData->hResourceMutex != nullptr) &&
 		(pThreadData->hEmptySemaphore != nullptr) &&
 		(pThreadData->hOccupiedSemaphore != nullptr))
 	{
+		// Wait for free space in queue
 		WaitForSingleObject(pThreadData->hEmptySemaphore, INFINITE);
+		// Lock queue for thread-safe access
 		WaitForSingleObject(pThreadData->hResourceMutex, INFINITE);
 
 		TRACE(_T("[PushNotification] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
+		// Add item to circular queue
 		pThreadData->arrNotifyData[pThreadData->nNextIn].nFileEvent = nFileEvent;
 		pThreadData->arrNotifyData[pThreadData->nNextIn].strFilePath = strFilePath;
 		pThreadData->nNextIn++;
-		pThreadData->nNextIn %= NOTIFY_FILE_SIZE;
+		pThreadData->nNextIn %= NOTIFY_FILE_SIZE;  // Wrap around
 
+		// Release lock and signal item available
 		ReleaseSemaphore(pThreadData->hResourceMutex, 1, nullptr);
 		ReleaseSemaphore(pThreadData->hOccupiedSemaphore, 1, nullptr);
 	}
 }
 
 /**
- * @brief Pops a file event notification from the per-client queue.
- * @param nSocketIndex Index of the client socket.
- * @param nFileEvent [out] The file event type.
- * @param strFilePath [out] The file path associated with the event.
+ * @brief Pops a file event notification from the per-client queue
+ * @param nSocketIndex Index of the client socket
+ * @param nFileEvent [out] The file event type
+ * @param strFilePath [out] The file path associated with the event
  */
 void PopNotification(const int& nSocketIndex, int& nFileEvent, std::wstring& strFilePath)
 {
@@ -328,45 +369,77 @@ void PopNotification(const int& nSocketIndex, int& nFileEvent, std::wstring& str
 		(pThreadData->hEmptySemaphore != nullptr) &&
 		(pThreadData->hOccupiedSemaphore != nullptr))
 	{
+		// Wait for item to be available in queue
 		WaitForSingleObject(pThreadData->hOccupiedSemaphore, INFINITE);
+		// Lock queue for thread-safe access
 		WaitForSingleObject(pThreadData->hResourceMutex, INFINITE);
 
+		// Remove item from circular queue (FIFO)
 		nFileEvent = pThreadData->arrNotifyData[pThreadData->nNextOut].nFileEvent;
 		strFilePath = pThreadData->arrNotifyData[pThreadData->nNextOut].strFilePath;
 		pThreadData->nNextOut++;
-		pThreadData->nNextOut %= NOTIFY_FILE_SIZE;
+		pThreadData->nNextOut %= NOTIFY_FILE_SIZE;  // Wrap around
 		TRACE(_T("[PopNotification] nFileEvent = %d, strFilePath = \"%s\"\n"), nFileEvent, strFilePath.c_str());
 
+		// Release lock and signal free space available
 		ReleaseSemaphore(pThreadData->hResourceMutex, 1, nullptr);
 		ReleaseSemaphore(pThreadData->hEmptySemaphore, 1, nullptr);
 	}
 }
 
 /**
- * @brief Main thread function for handling a single IntelliDisk client connection.
- *        Handles protocol, file commands, and notification queue for the client.
- * @param lpParam Pointer to the socket index (int*).
- * @return 0 on thread exit.
+ * @brief Main thread function for handling a single IntelliDisk client connection
+ * @details Handles protocol negotiation, file commands (upload, download, delete),
+ *          and notification queue processing for the client
+ * @param lpParam Pointer to the socket index (int*)
+ * @return 0 on thread exit
+ * 
+ * ARCHITECTURE: PER-CLIENT THREAD
+ * ================================
+ * Each connected client gets its own thread that:
+ * 1. Manages client authentication (IntelliDisk + machine ID)
+ * 2. Processes client-initiated commands (Upload, Download, Delete, Ping, Close)
+ * 3. Monitors per-client notification queue for multi-client sync events
+ * 4. Broadcasts file changes to other clients via PushNotification()
+ * 
+ * COMMAND PROTOCOL:
+ * =================
+ * Client -> Server:
+ *   - "IntelliDisk" + MachineID: Initial handshake
+ *   - "Upload" + filepath: Store file in database
+ *   - "Download" + filepath: Retrieve file from database
+ *   - "Delete" + filepath: Remove file from database
+ *   - "Ping": Keep-alive message
+ *   - "Close": Graceful disconnect
+ * 
+ * Server -> Client (Push Notifications):
+ *   - "Restart": Server shutting down
+ *   - "NotifyDownload" + filepath: Another client uploaded - download to sync
+ *   - "NotifyDelete" + filepath: Another client deleted - delete to sync
  */
 #pragma warning(suppress: 6262)
 DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 {
 	unsigned char pBuffer[MAX_BUFFER] = { 0, };
 	int nLength = 0;
+	// Get socket index from parameter (passed by CreateDatabase)
 	const int nSocketIndex = *(int*)(lpParam);
 	TRACE(_T("nSocketIndex = %d\n"), (nSocketIndex));
 	CWSocket& pApplicationSocket = g_pClientSocket[nSocketIndex];
 	ASSERT(pApplicationSocket.IsCreated());
-	std::wstring strComputerID;
+	std::wstring strComputerID;  // Client's unique machine identifier
 
-	// Allocate and initialize per-thread notification queue
+	// === INITIALIZE PER-CLIENT NOTIFICATION QUEUE ===
+	// Each client needs its own queue to receive sync notifications
 	g_pThreadData[nSocketIndex] = new NOTIFY_FILE_ITEM;
 	ASSERT(g_pThreadData[nSocketIndex] != nullptr);
 	NOTIFY_FILE_ITEM* pThreadData = g_pThreadData[nSocketIndex];
 	ASSERT(pThreadData != nullptr);
-	pThreadData->hOccupiedSemaphore = CreateSemaphore(nullptr, 0, NOTIFY_FILE_SIZE, nullptr);
-	pThreadData->hEmptySemaphore = CreateSemaphore(nullptr, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, nullptr);
-	pThreadData->hResourceMutex = CreateSemaphore(nullptr, 1, 1, nullptr);
+	// Create synchronization objects for producer-consumer queue
+	pThreadData->hOccupiedSemaphore = CreateSemaphore(nullptr, 0, NOTIFY_FILE_SIZE, nullptr);  // Items in queue
+	pThreadData->hEmptySemaphore = CreateSemaphore(nullptr, NOTIFY_FILE_SIZE, NOTIFY_FILE_SIZE, nullptr);  // Free slots
+	pThreadData->hResourceMutex = CreateSemaphore(nullptr, 1, 1, nullptr);  // Queue mutex
+	// Initialize circular queue pointers
 	pThreadData->nNextIn = pThreadData->nNextOut = 0;
 
 	g_bIsConnected[nSocketIndex] = false;
@@ -376,10 +449,11 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 		try
 		{
 			if (!pApplicationSocket.IsCreated())
-				break;
+				break;  // Socket closed, exit thread
 
 			if (pApplicationSocket.IsReadible(1000))
 			{
+				// === CLIENT COMMAND RECEIVED ===
 				nLength = sizeof(pBuffer);
 				ZeroMemory(pBuffer, sizeof(pBuffer));
 				if (ReadBuffer(nSocketIndex, pApplicationSocket, pBuffer, nLength, true, false))
@@ -387,6 +461,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 					const std::string strCommand = (char*) &pBuffer[3];
 					if (strCommand.compare("IntelliDisk") == 0)
 					{
+						// HANDSHAKE: Client sends "IntelliDisk" + machine ID for authentication
 						TRACE(_T("Client connected!\n"));
 						nLength = sizeof(pBuffer);
 						ZeroMemory(pBuffer, sizeof(pBuffer));
@@ -401,6 +476,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 					{
 						if (strCommand.compare("Close") == 0)
 						{
+							// CLIENT DISCONNECT: Graceful shutdown
 							nLength = sizeof(pBuffer);
 							ZeroMemory(pBuffer, sizeof(pBuffer));
 							if (((nLength = pApplicationSocket.Receive(pBuffer, nLength)) > 0) &&
@@ -448,11 +524,14 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 										{
 											const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 											TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
+											// Store file in MySQL database
 											VERIFY(UploadFile(nSocketIndex, pApplicationSocket, strFilePath));
-											// Notify all other Clients
+
+											// === BROADCAST TO ALL OTHER CLIENTS ===
+											// Notify all other clients to download this file for sync
 											for (int nThreadIndex = 0; nThreadIndex < g_nSocketCount; nThreadIndex++)
 											{
-												if (nThreadIndex != nSocketIndex) // skip current thread queue
+												if (nThreadIndex != nSocketIndex) // Skip current client
 													PushNotification(nThreadIndex, ID_FILE_DOWNLOAD, strFilePath);
 											}
 										}
@@ -467,11 +546,14 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 											{
 												const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 												TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
+												// Remove file from MySQL database
 												VERIFY(DeleteFile(nSocketIndex, pApplicationSocket, strFilePath));
-												// Notify all other Clients
+
+												// === BROADCAST TO ALL OTHER CLIENTS ===
+												// Notify all other clients to delete this file for sync
 												for (int nThreadIndex = 0; nThreadIndex < g_nSocketCount; nThreadIndex++)
 												{
-													if (nThreadIndex != nSocketIndex) // skip current thread queue
+													if (nThreadIndex != nSocketIndex) // Skip current client
 														PushNotification(nThreadIndex, ID_FILE_DELETE, strFilePath);
 												}
 											}
@@ -485,9 +567,11 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 			}
 			else
 			{
+				// === NO DATA AVAILABLE - CHECK NOTIFICATION QUEUE ===
 				// If server is stopping, notify client to restart
 				if (!g_bServerRunning)
 				{
+					// Send restart command to client for graceful shutdown
 					const std::string strCommand = "Restart";
 					nLength = (int)strCommand.length() + 1;
 					if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, true))
@@ -498,13 +582,17 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 				else
 				{
 					// Process queued notifications for this client
+					// Check if there are pending file sync notifications
 					if (pThreadData->nNextIn != pThreadData->nNextOut)
 					{
+						// Dequeue notification and send to client
 						int nFileEvent = 0;
 						std::wstring strFilePath;
 						PopNotification(nSocketIndex, nFileEvent, strFilePath);
+
 						if (ID_FILE_DOWNLOAD == nFileEvent)
 						{
+							// Another client uploaded - tell this client to download
 							const std::string strCommand = "NotifyDownload";
 							nLength = (int)strCommand.length() + 1;
 							if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strCommand.c_str(), nLength, true, false))
@@ -575,8 +663,22 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 int g_nServicePort = IntelliDiskPort;
 
 /**
- * @brief Main server thread for accepting client connections and launching handler threads.
- *        Also loads configuration and binds the server socket.
+ * @brief Main server thread for accepting client connections and launching handler threads
+ * @details Loads configuration from INI file, binds the server socket, and enters the accept loop.
+ *          Creates a new IntelliDiskThread for each incoming client connection
+ * @param lpParam Unused parameter
+ * @return 0 on success, non-zero on error
+ * 
+ * SERVER LIFECYCLE:
+ * =================
+ * 1. Load service port and database settings from IntelliDisk.xml
+ * 2. Bind server socket to port (default 8080)
+ * 3. Listen for incoming connections (backlog = 65536)
+ * 4. Accept loop:
+ *    - Accept() blocks until client connects
+ *    - Create new IntelliDiskThread for each client
+ *    - Increment socket/thread counters
+ * 5. Shutdown: Close server socket and wait for threads
  */
 DWORD WINAPI CreateDatabase(LPVOID lpParam)
 {
@@ -584,21 +686,31 @@ DWORD WINAPI CreateDatabase(LPVOID lpParam)
 	try
 	{
 		TRACE(_T("CreateDatabase()\n"));
+		// Load configuration from XML settings file
 		g_nServicePort = LoadServicePort();
 		if (!LoadAppSettings(g_strHostName, g_nHostPort, g_strDatabase, g_strUsername, g_strPassword))
 		{
+			// Configuration load failed but continue with defaults
 			// return (DWORD)-1;
 		}
+
+		// Bind server socket to port and start listening
 		g_pServerSocket.CreateAndBind(g_nServicePort, SOCK_STREAM, AF_INET);
 		if (g_pServerSocket.IsCreated())
 		{
 			g_bServerRunning = true;
-			g_pServerSocket.Listen(MAX_SOCKET_CONNECTIONS);
+			g_pServerSocket.Listen(MAX_SOCKET_CONNECTIONS);  // Backlog = 65536
+
+			// === ACCEPT LOOP ===
+			// Accept incoming connections until server stops
 			while (g_bServerRunning)
 			{
+				// Block until client connects (or StopProcessingThread interrupts)
 				g_pServerSocket.Accept(g_pClientSocket[g_nSocketCount]);
+
 				if (g_bServerRunning)
 				{
+					// Create new thread to handle this client
 					const int nSocketIndex = g_nSocketCount;
 					g_hThreadArray[g_nThreadCount] = CreateThread(nullptr, 0, IntelliDiskThread, (int*)&nSocketIndex, 0, &m_dwThreadID[g_nThreadCount]);
 					ASSERT(g_hThreadArray[g_nThreadCount] != nullptr);
@@ -607,6 +719,7 @@ DWORD WINAPI CreateDatabase(LPVOID lpParam)
 				}
 				else
 				{
+					// Server stopping - close the socket that unblocked Accept()
 					g_pClientSocket[g_nSocketCount].Close();
 					g_nSocketCount++;
 				}
@@ -626,7 +739,8 @@ DWORD WINAPI CreateDatabase(LPVOID lpParam)
 }
 
 /**
- * @brief Starts the main server processing thread.
+ * @brief Starts the main server processing thread
+ * @details Creates and launches the CreateDatabase thread which accepts client connections
  */
 void StartProcessingThread()
 {
@@ -637,7 +751,17 @@ void StartProcessingThread()
 }
 
 /**
- * @brief Stops the server processing thread and closes all client sockets.
+ * @brief Stops the server processing thread and closes all client sockets
+ * @details Sets server running flag to false, connects to self to unblock accept(),
+ *          waits for all threads to complete, and closes all client connections
+ * 
+ * GRACEFUL SHUTDOWN SEQUENCE:
+ * ===========================
+ * 1. Set g_bServerRunning = false to signal all threads to stop
+ * 2. Connect to self (localhost) to unblock Accept() call
+ * 3. Wait for all client threads to exit (they'll see g_bServerRunning == false)
+ * 4. Close all client sockets
+ * 5. Reset counters
  */
 void StopProcessingThread()
 {
@@ -647,10 +771,19 @@ void StopProcessingThread()
 		TRACE(_T("StopProcessingThread()\n"));
 		if (g_bServerRunning)
 		{
+			// Step 1: Signal all threads to stop
 			g_bServerRunning = false;
+
+			// Step 2: Unblock Accept() by connecting to ourselves
 			pClosingSocket.CreateAndConnect(IntelliDiskIP, g_nServicePort);
+
+			// Step 3: Wait for all threads to complete
 			WaitForMultipleObjects(g_nThreadCount, g_hThreadArray, TRUE, INFINITE);
+
+			// Step 4: Close unblocking socket
 			pClosingSocket.Close();
+
+			// Step 5: Close all client sockets and reset counters
 			for (int nIndex = 0; nIndex < g_nSocketCount; nIndex++)
 				g_pClientSocket[nIndex].Close();
 			g_nSocketCount = 0;
