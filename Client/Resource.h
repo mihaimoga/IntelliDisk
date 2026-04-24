@@ -4,6 +4,7 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
+#define IDS_COM_INIT_FAILED             101
 #define IDP_SOCKETS_INIT_FAILED         104
 #define IDB_WRITESMALL                  110
 #define IDB_WRITELARGE                  111
@@ -32,6 +33,7 @@
 #define IDD_SETTINGS_DIALOG             316
 #define IDD_WebBrowserDlg               317
 #define IDD_CheckForUpdatesDlg          318
+#define IDS_PREV_VERSION_DETECTED       319
 #define IDC_VERSION                     1000
 #define IDC_WARNING                     1001
 #define IDC_WEBSITE                     1002
@@ -67,7 +69,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        319
+#define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32785
 #define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           317

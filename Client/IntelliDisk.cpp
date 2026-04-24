@@ -140,7 +140,7 @@ BOOL CIntelliDiskApp::InitInstance()
 		ParseCommandLine(cmdInfo);
 
 		// Notify user and activate the existing instance
-		AfxMessageBox(_T("Previous version detected, will now restore it..."), MB_OK | MB_ICONINFORMATION);
+		AfxMessageBox(IDS_PREV_VERSION_DETECTED, MB_OK | MB_ICONINFORMATION);
 		// Bring existing instance to foreground and optionally open file
 		m_pInstanceChecker.ActivatePreviousInstance(cmdInfo.m_strFileName);
 		return FALSE;  // Exit this instance
@@ -196,7 +196,7 @@ BOOL CIntelliDiskApp::InitInstance()
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (FAILED(hr))
 	{
-		AfxMessageBox(_T("COM initialization failed."), MB_OK | MB_ICONERROR);
+		AfxMessageBox(IDS_COM_INIT_FAILED, MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
 
