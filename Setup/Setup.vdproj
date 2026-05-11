@@ -64,12 +64,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_311CD367EB63499CBACF8471DAE1A455"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_37084BB1E4624477A2A53D418B5BE68A"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -84,6 +78,12 @@
         {
         "MsmKey" = "8:_3BDB5166116B9552814F73173528D98D"
         "OwnerKey" = "8:_982675BC25C9427296B06D9FF9172AE4"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_4D4237E968E8402289300FC5ECBF7D80"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -108,6 +108,12 @@
         {
         "MsmKey" = "8:_6876F533CF6535F21F2F77AD11C7D00E"
         "OwnerKey" = "8:_BD55A311AB5D4A21A3BD96071F48BC5B"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6CD33E9BB86545CD8B14B6BD6CD5D632"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -143,13 +149,13 @@
         "Entry"
         {
         "MsmKey" = "8:_8FC9A1B4DC723DC8BD86989E36723271"
-        "OwnerKey" = "8:_BD55A311AB5D4A21A3BD96071F48BC5B"
+        "OwnerKey" = "8:_982675BC25C9427296B06D9FF9172AE4"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_8FC9A1B4DC723DC8BD86989E36723271"
-        "OwnerKey" = "8:_982675BC25C9427296B06D9FF9172AE4"
+        "OwnerKey" = "8:_BD55A311AB5D4A21A3BD96071F48BC5B"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -227,12 +233,6 @@
         "Entry"
         {
         "MsmKey" = "8:_BD55A311AB5D4A21A3BD96071F48BC5B"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C2F1B0EC2B384184A8685FFBC57B3E56"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -499,26 +499,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_311CD367EB63499CBACF8471DAE1A455"
-            {
-            "SourcePath" = "8:..\\Client\\ReleaseNotes.html"
-            "TargetName" = "8:ReleaseNotes.html"
-            "Tag" = "8:"
-            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_37084BB1E4624477A2A53D418B5BE68A"
             {
             "SourcePath" = "8:..\\IntelliDisk-MySQL.png"
@@ -559,6 +539,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4D4237E968E8402289300FC5ECBF7D80"
+            {
+            "SourcePath" = "8:..\\SoftwareContentRegister.html"
+            "TargetName" = "8:SoftwareContentRegister.html"
+            "Tag" = "8:"
+            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_676CA824BB58BC7F364394DB49CF45AF"
             {
             "SourcePath" = "8:genUp4win.dll"
@@ -597,6 +597,26 @@
             "Register" = "3:1"
             "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6CD33E9BB86545CD8B14B6BD6CD5D632"
+            {
+            "SourcePath" = "8:..\\ReleaseNotes.html"
+            "TargetName" = "8:ReleaseNotes.html"
+            "Tag" = "8:"
+            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_700E33BADC34296FD8D00DB108B5BFAE"
@@ -817,26 +837,6 @@
             "Register" = "3:1"
             "Exclude" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C2F1B0EC2B384184A8685FFBC57B3E56"
-            {
-            "SourcePath" = "8:..\\Client\\SoftwareContentRegister.html"
-            "TargetName" = "8:SoftwareContentRegister.html"
-            "Tag" = "8:"
-            "Folder" = "8:_686C35DC20564F809DAE6CC11F225ABA"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C639C7B55C96AED344620A755E757DC7"
