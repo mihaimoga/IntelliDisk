@@ -358,6 +358,8 @@ BOOL CAboutDlg::OnInitDialog()
 		const int nFirst = strVersion.Find(_T('.'));  // Find first dot (after major)
 		const int nSecond = strVersion.Find(_T('.'), nFirst + 1);  // Find second dot (after minor)
 		strVersion.Truncate(nSecond);  // Keep only major.minor
+		if (nSecond == (nFirst + 2))
+			strVersion.Insert(nFirst + 1, _T("0"));
 		// Display architecture-specific version string
 #if _WIN32 || _WIN64
 #if _WIN64
