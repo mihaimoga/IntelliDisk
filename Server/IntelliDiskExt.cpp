@@ -16,7 +16,6 @@ IntelliDisk. If not, see <http://www.opensource.org/licenses/gpl-3.0.html>*/
 #include "pch.h"
 #include "IntelliDiskExt.h"
 #include "IntelliDiskINI.h"
-#include "IntelliDiskSQL.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -511,7 +510,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 									{
 										const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 										TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
-										VERIFY(DownloadFile(nSocketIndex, pApplicationSocket, strFilePath));
+										// TODO: VERIFY(DownloadFile(nSocketIndex, pApplicationSocket, strFilePath));
 									}
 								}
 								else
@@ -525,7 +524,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 											const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 											TRACE(_T("Uploading %s...\n"), strFilePath.c_str());
 											// Store file in MySQL database
-											VERIFY(UploadFile(nSocketIndex, pApplicationSocket, strFilePath));
+											// TODO: VERIFY(UploadFile(nSocketIndex, pApplicationSocket, strFilePath));
 
 											// === BROADCAST TO ALL OTHER CLIENTS ===
 											// Notify all other clients to download this file for sync
@@ -547,7 +546,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 												const std::wstring& strFilePath = utf8_to_wstring((char*) &pBuffer[3]);
 												TRACE(_T("Deleting %s...\n"), strFilePath.c_str());
 												// Remove file from MySQL database
-												VERIFY(DeleteFile(nSocketIndex, pApplicationSocket, strFilePath));
+												// TODO: VERIFY(DeleteFile(nSocketIndex, pApplicationSocket, strFilePath));
 
 												// === BROADCAST TO ALL OTHER CLIENTS ===
 												// Notify all other clients to delete this file for sync
@@ -602,7 +601,7 @@ DWORD WINAPI IntelliDiskThread(LPVOID lpParam)
 								if (WriteBuffer(nSocketIndex, pApplicationSocket, (unsigned char*)strFileName.c_str(), nLength, false, false))
 								{
 									TRACE(_T("Downloading %s...\n"), strFilePath.c_str());
-									VERIFY(DownloadFile(nSocketIndex, pApplicationSocket, strFilePath));
+									// TODO: VERIFY(DownloadFile(nSocketIndex, pApplicationSocket, strFilePath));
 								}
 							}
 						}

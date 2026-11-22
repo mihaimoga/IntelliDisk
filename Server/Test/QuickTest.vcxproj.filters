@@ -42,9 +42,6 @@
     <ClInclude Include="..\SocMFC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ODBCWrappers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\AppSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,9 +55,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\IntelliDiskINI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\IntelliDiskSQL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -93,9 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\IntelliDiskINI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\IntelliDiskSQL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

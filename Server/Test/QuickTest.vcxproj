@@ -202,8 +202,6 @@
     <ClInclude Include="..\AppSettings.h" />
     <ClInclude Include="..\IntelliDiskExt.h" />
     <ClInclude Include="..\IntelliDiskINI.h" />
-    <ClInclude Include="..\IntelliDiskSQL.h" />
-    <ClInclude Include="..\ODBCWrappers.h" />
     <ClInclude Include="..\SHA256.h" />
     <ClInclude Include="..\SocMFC.h" />
     <ClInclude Include="framework.h" />
@@ -219,7 +217,6 @@
   <ItemGroup>
     <ClCompile Include="..\IntelliDiskExt.cpp" />
     <ClCompile Include="..\IntelliDiskINI.cpp" />
-    <ClCompile Include="..\IntelliDiskSQL.cpp" />
     <ClCompile Include="..\SHA256.cpp" />
     <ClCompile Include="..\SocMFC.cpp" />
     <ClCompile Include="HLinkCtrl.cpp" />
