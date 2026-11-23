@@ -63,7 +63,6 @@ std::string wstring_to_utf8(const std::wstring& str);
 
 /**
  * @brief Reads a buffer from the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
- * @param nSocketIndex Index of the client socket.
  * @param pApplicationSocket The socket to read from.
  * @param pBuffer Buffer to store received data.
  * @param nLength [in/out] Length of buffer and received data.
@@ -71,11 +70,10 @@ std::string wstring_to_utf8(const std::wstring& str);
  * @param ReceiveEOT Whether to expect an EOT handshake.
  * @return true on successful read and protocol validation, false otherwise.
  */
-bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT);
+bool ReadBuffer(CWSocket& pApplicationSocket, unsigned char* pBuffer, int& nLength, const bool ReceiveENQ, const bool ReceiveEOT);
 
 /**
  * @brief Writes a buffer to the socket, handling protocol handshakes (ENQ, EOT, ACK/NAK).
- * @param nSocketIndex Index of the client socket.
  * @param pApplicationSocket The socket to write to.
  * @param pBuffer Buffer containing data to send.
  * @param nLength Length of data to send.
@@ -83,7 +81,7 @@ bool ReadBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, unsigned c
  * @param SendEOT Whether to send an EOT handshake.
  * @return true on successful write and protocol validation, false otherwise.
  */
-bool WriteBuffer(const int nSocketIndex, CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT);
+bool WriteBuffer(CWSocket& pApplicationSocket, const unsigned char* pBuffer, const int nLength, const bool SendENQ, const bool SendEOT);
 
 /**
  * @brief Starts the main server processing thread for accepting client connections.
